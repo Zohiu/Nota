@@ -1,3 +1,5 @@
+# This project has long been discontinued. It was my first project and the code is not great. I wouldn't recommend the use of any of this.
+
 <p align="center">
     <img src="https://i.ibb.co/kX6zMZp/Nota-logo-3-2-round.png" alt="Logo" width=100 height=100>
   </a>
