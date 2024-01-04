@@ -1,283 +1,1040 @@
-if __name__ == '__main__':
-    from Modules.Settings import setprefix, setcolor, resetcolor, togglefooter, toggleads, togglefavourites
-    from Modules.Files import save, read, delete, files, favourites
-    from Modules.Other import calc, embed, timer, stats, premium
-    from discord.ext.commands import CommandNotFound
-    from Modules import help, privacy, botstats
-    from discord.ext import commands, tasks
-    from discord.abc import PrivateChannel
-    from Modules.Admin import broadcast
-    from discord import errors
-    from nota import version
-    import Functions
-    import shutil
-    import json
-    import time
-    import dbl
-    import os
-    
-    TOKEN = open("bot.token", "r").read()
-    bot = commands.Bot("-")
-    bot_updater = bot
-    files_in_dir = []
-    fileDir = os.path.join(os.getcwd(), "Files")
-    start_time = time.time()
-    
-    bot.remove_command("help")
-    
-    class TopGG(commands.Cog):
-        def __init__(self, bot_in):
-            self.bot = bot_in
-            self.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MDc1NDYxMzgyMDkxNTcxNCIsImJvdCI6dHJ1ZSwiaWF0IjoxNjA3NDMwODA1fQ.7QZw6KUpNc-EyPnhRbYK1tfoMQNJTqzh--I-L9dj2Rk'  # set this to your DBL token
-            self.dblpy = dbl.DBLClient(self.bot, self.token)
-            self.update_stats.start()
-        
-        def cog_unload(self):
-            self.update_stats.cancel()
-        
-        @tasks.loop(minutes=30)
-        async def update_stats(self):
-            await self.bot.wait_until_ready()
-            try:
-                server_count = len(self.bot.guilds)
-                # await self.dblpy.post_guild_count(server_count)
-                print('[top.gg] Posted server count ({})'.format(server_count))
-            except Exception as e:
-                print('[top.gg] Failed to post server count\n{}: {}'.format(type(e).__name__, e))
-            
-            await Functions.update_status(bot)
-    
-    @bot.event
-    async def on_guild_join(guild):
-        print("[Guilds] The bot joined a guild. Current number:", len(bot.guilds))
-    
-    @bot.event
-    async def on_guild_remove(guild):
-        print("[Guilds] The bot left a guild. Current number:", len(bot.guilds))
-        shutil.rmtree(os.path.join(fileDir, str(guild.id)), ignore_errors=True)
-    
+print("                                                                     ")
+print("        _____________________________________________________        ")
+print("       /       ***************************************       \       ")
+print("      /        *  |\   |  |----|  ---|---    /-\     *        \      ")
+print("     /         *  | \  |  |    |     |      /   \    *         \     ")
+print("    /          *  |  \ |  |    |     |     /-----\   *          \    ")
+print("   /           *  |   \|  |----|     |    /       \  *           \   ")
+print("  /            ***************************************            \  ")
+print(" /-----------------------------------------------------------------\ ")
+print(" |              Version : 2.3  |  The BOT REVOLUTION!              | ")
+print(" |-----------------------------------------------------------------| ")
+print(" | This bot has gotten too big. send help. this code is just giant | ")
+print(" \-----------------------------------------------------------------/ ")
+print("  \                       code by Fguzy                           /  ")
+print("   ---------------------------------------------------------------   ")
+print("                                                                     ")
+
+
+# Importing the packages
+print("Importing packages and setting variables...")
+import os
+import discord
+from discord.ext import commands
+import time
+
+# Defining the Vars
+TOKEN = 'NzE0OTYyNTM3MDkwOTA4MTgw.Xs3GXA.2TTuj5wp1TAmU1rCFqAk8eM7Cu0'
+prefix = "pre-"
+bot = commands.Bot(prefix)
+dirpath = os.getcwd()
+location = dirpath
+files_in_dir = []
+fileDir = os.path.dirname(os.path.realpath('__file__'))
+
+# Removing normal help command
+bot.remove_command("help")
+
+print("[ OK ] All packages loaded and variables set.")
+print()
+print("Nota is loading...")
+
+class Functions:
+
+    async def embed(ctx, title, describtion):
+        embed = discord.Embed(
+            title=title,
+            description=describtion,
+            colour=0x34b713
+        )
+        await ctx.send(embed=embed)
+
+    async def check_perm(ctx):
+        try:
+            open(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)), "r").read()
+            if "Nota perms" in str(ctx.message.author.roles):
+                access = True
+            else:
+                access = False
+        except:
+            access = True
+
+        return  access
+
+    async def check_userperm(ctx, name):
+        try:
+            test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+            lines = test.readlines()
+            for line in lines:
+                if '"' + name + '"' in line:
+                    string = line.replace('"' + name + '"' + ' Owner: ', "")
+                    if string.endswith("\n"):
+                        string = string[:-1]
+
+            if '"' + name + '"' in open(os.path.join(fileDir, '{}/{}.{}.dcuser'.format(ctx.guild.id, ctx.guild.id, ctx.message.author)), "r").read():
+                access = True
+            else:
+                access = False
+        except:
+            access = False
+
+        return  access
+
+class Events:
+
     @bot.event
     async def on_ready():
-        bot.add_cog(TopGG(bot))
-        print("[Debug] Nota is online.")
+        print("[ OK ] Nota is online.")
         print()
-        await Functions.update_status(bot)
-    
-    @bot.event
-    async def on_reaction_add(reaction, user):
-        if user.id == bot.user.id:
-            return
-        
-        if reaction.message.author.id == bot.user.id:
-            emoji_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-            
-            for i in emoji_list:
-                if reaction.emoji == i:
-                    if str(reaction.message.channel.type) == "private":
-                        current_id = os.path.join(str(reaction.message.author.id), str(reaction.message.author.id))
-                    else:
-                        current_id = os.path.join(str(reaction.message.guild.id), str(reaction.message.guild.id))
-                    
-                    with open(os.path.join(fileDir, '{}.json'.format(current_id)), "r") as file:
-                        s = json.loads(file.read())
-                    
-                    await reaction.message.delete()
-                    await read.run(reaction.message, "-", ["-read", s["favourites"][emoji_list.index(i)]], current_id)
-                    
-                    return
-    
-    @bot.event
-    async def on_command_error(ctx, error):
-        if isinstance(error, CommandNotFound):
-            return ctx
-        raise error
-    
-    @bot.event
-    async def on_message(message):
-        if message.author.id == bot.user.id:
-            return
-        
-        try:
-            prefix = await Functions.get_prefix(message)
-        except FileNotFoundError:
-            prefix = "-"
-        except json.JSONDecodeError:
-            if isinstance(message.channel, PrivateChannel):
-                current_id = os.path.join(str(message.author.id), str(message.author.id))
-                open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                    json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            else:
-                current_id = os.path.join(str(message.guild.id), str(message.guild.id))
-                open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                    json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            await message.channel.send(
-                "Sorry, but there was a major error with your saved files. All of your files and settings had to be reset. Please join the support server and report exactly what "
-                "happened leading up to this error. Thanks!\nhttps://discord.gg/yf3jehq4sn")
-            print("[Error] Save file reset! User: " + message.author.name)
-            return
-        
-        if message.content.lower() == "will nota kill us all?":
-            await Functions.embed(message, "Yes.", "I will.")
-            print("[Secret] NOTA WILL KILL EVERYONE!!!")
-            return
-        
-        msglst = await Functions.input_handler(message.content)
-        
-        try:
-            if not msglst[0].startswith(prefix):
-                return
-        except AttributeError:
-            return
-        
-        try:
-            print("[Bot] Nota has been used.")
-            with open("Data/totaluses.dat", "r") as file:
-                fread = file.read()
-                with open("Data/totaluses.dat", "w") as file2:
-                    file2.write(str(int(fread) + 1))
-            if isinstance(message.channel, PrivateChannel):
-                current_id = os.path.join(str(message.author.id), str(message.author.id))
-                if not os.path.exists(os.path.join(fileDir, str(message.author.id))):
-                    os.mkdir(os.path.join(fileDir, str(message.author.id)))
-                if not os.path.exists((os.path.join(fileDir, '{}.json'.format(current_id)))):
-                    open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                        json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            else:
-                current_id = os.path.join(str(message.guild.id), str(message.guild.id))
-                if not os.path.exists(os.path.join(fileDir, str(message.guild.id))):
-                    os.mkdir(os.path.join(fileDir, str(message.guild.id)))
-                if not os.path.exists((os.path.join(fileDir, '{}.json'.format(current_id)))):
-                    open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                        json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            
-            usrpremium = True
-            with open(os.path.join(os.getcwd(), "premium.users"), "r") as f:
-                for line in f.readlines():
-                    lsplit = line.split("#")
-                    if str(message.author.id) in lsplit[0]:
-                        usrpremium = True
-            if msglst[0] == prefix + "help":
-                await help.run(message, prefix, msglst, version)
-            elif msglst[0] == prefix + "privacy":
-                await privacy.run(message, prefix, msglst, version)
-            
-            # ADMIN
-            elif msglst[0] == prefix + "broadcast":
-                if str(message.author.id) == "485441972111147010":
-                    await broadcast.run(message, prefix, msglst, current_id, bot)
-                else:
-                    await Functions.embed(message, "Error!", "You do not have the permission to use this command!")
-            
-            # SETTINGS
-            elif msglst[0] == prefix + "setprefix":
-                await setprefix.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "setcolor":  # PREMIUM
-                await setcolor.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "resetcolor":  # PREMIUM
-                await resetcolor.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "togglefooter":  # PREMIUM
-                await togglefooter.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "toggleads":  # PREMIUM
-                await toggleads.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "togglefavourites":  # PREMIUM
-                await togglefavourites.run(message, prefix, msglst, current_id)
-            
-            # STATS
-            elif msglst[0] == prefix + "stats" or msglst[0] == prefix + "privatestats":
-                if isinstance(message.channel, PrivateChannel):
-                    await stats.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatestats" and usrpremium:
-                    await stats.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await stats.run(message, prefix, msglst, current_id)
-            
-            # FILES
-            elif msglst[0] == prefix + "save" or msglst[0] == prefix + "privatesave":
-                if isinstance(message.channel, PrivateChannel):
-                    await save.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatesave" and usrpremium:
-                    await save.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await save.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "read" or msglst[0] == prefix + "privateread":
-                if isinstance(message.channel, PrivateChannel):
-                    await read.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privateread" and usrpremium:
-                    await read.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await read.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "delete" or msglst[0] == prefix + "privatedelete":
-                if isinstance(message.channel, PrivateChannel):
-                    await delete.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatedelete" and usrpremium:
-                    await delete.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await delete.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "files" or msglst[0] == prefix + "privatefiles":
-                if isinstance(message.channel, PrivateChannel):
-                    await files.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatefiles" and usrpremium:
-                    await files.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await files.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "favourites":
-                await favourites.run(message, bot, msglst, current_id)
-            
-            # OTHER
-            elif msglst[0] == prefix + "timer":
-                await timer.run(message, prefix, msglst)
-            
-            elif msglst[0] == prefix + "calc":
-                await calc.run(message, msglst)
-            
-            elif msglst[0] == prefix + "embed":
-                await embed.run(message, prefix, msglst)
-            
-            elif msglst[0] == prefix + "botstats":
-                await botstats.run(message, bot, start_time, time, current_id)
-            
-            # Premium
-            elif msglst[0] == prefix + "premium":
-                await premium.run(message)
-            
-            else:
-                if msglst[0].startswith(prefix):
-                    await Functions.embed(message, "<:nota_error:796499987949027349> That's not a command. type '" + prefix + "help' to find out hot the bot works!")
-        
-        except errors.Forbidden as e:
-            stringsend = "I am missing some permissions here. Please make sure that I have all of the ones below:"
-            stringsend += "\n- Manage Messages"
-            stringsend += "\n- Embed Links"
-            stringsend += "\n- Attach Files"
-            stringsend += "\n- Read Message History"
-            stringsend += "\n- Use External Emojis"
-            stringsend += "\n\nIf you have any more problems, join the support server. (link on Nota's top.gg page)"
-            print("[Error] Someone didn't give Nota permissions: " +
-                  str(e).split("(")[1].split(")")[0].split(":")[
-                      1].strip(" "))
+        activity = discord.Game(name="-help")
+        await bot.change_presence(status=discord.Status.online, activity=activity)
+
+class Commands:
+
+    @bot.command()
+    async def help(ctx, *args):
+        if await Functions.check_perm(ctx):
+            embed = discord.Embed(
+                title="Commands:",
+                description="Prefix : -",
+                colour=0x34b713
+            )
+
+            embed.set_footer(text="© 2020 Nota version 2.3 | The BOT REVOLUTION!, A bot by Fguzy#5577.")
+            embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
+            embed.set_author(name="Nota Bot help", icon_url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
+
+            embed.add_field(name="Nota Bot main help page", value="-help", inline=False)
+
             try:
-                await message.channel.send(stringsend)
-            except errors.Forbidden:
-                print("[Error] ...and the Bot couldn't even tell them...")
-            return
-        except UnicodeDecodeError as e:
-            print("[Error] " + str(e))
+                if args[0] == "save":
+                    embed.add_field(name="--------------", value="------ Save Commands ------", inline=False)
+
+                    embed.add_field(name="Save something that only you can read. (dont forget the '')", value="-save {'TO BE SAVED'} {'FILENAME'}", inline=False)
+                    embed.add_field(name="Save something that everyone can read. (dont forget the '')", value="-saveglobal {'TO BE SAVED'} {'FILENAME'}", inline=False)
+                    embed.add_field(name="Save images for yourself. (dont forget the '')", value="-savepic {IMAGE LINK} {'FILENAME'}",inline=False)
+                    embed.add_field(name="Save global images. (dont forget the '')", value="-savepicglobal {IMAGE LINK} {'FILENAME'}", inline=False)
+                    embed.add_field(name="Save lists for yourself. (dont forget the '')", value="-list {make/add/change/remove} {'FILENAME'} {LINE NUMBER} {'TO BE SAVED'}\n'Line number' and 'to be saved' only on 'change'/'remove' | when using 'add' skip 'line number' and only do 'to be saved.'|", inline=False)
+                    embed.add_field(name="Save global lists. (dont forget the '')", value="-list {make/add/change/remove} {'FILENAME'} {LINE NUMBER} {'TO BE SAVED'}\n'Line number' and 'to be saved' only on 'change'/'remove' | when using 'add' skip 'line number' and only do 'to be saved.'|", inline=False)
+
+                if args[0] == "read":
+                    embed.add_field(name="--------------", value="------ Read Commands ------", inline=False)
+
+                    embed.add_field(name="Shows you a saved text.", value="-read {'FILENAME'}", inline=False)
+                    embed.add_field(name="Shows you whichever text you want. (admins only)", value="-amdinread {'FILENAME'}", inline=False)
+
+                if args[0] == "delete":
+                    embed.add_field(name="--------------", value="------ Delete Commands ------", inline=False)
+
+                    embed.add_field(name="Delete a file", value="-delete {'FILENAME'}", inline=False)
+                    embed.add_field(name="Delete whichever file you want. (admins only)", value="-admindelete {'FILENAME'}", inline=False)
+
+                if args[0] == "perms":
+                    embed.add_field(name="--------------", value="------ Permission Commands ------", inline=False)
+
+                    embed.add_field(name="give a user the permission to read a file", value="-userperm {'SAVE FILE'} {USER} {ADD/DELETE}\nuse add to give someone the perms and delete to take them away.", inline=False)
+                    embed.add_field(name="Share a File. (how to get the guild id: Server settings -> Widget -> Server id)", value="-share {'SAVE FILE'} {GUILD ID OF THE RECEIVING SERVER}", inline=False)
+                    embed.add_field(name="Only people with the role can use the bot", value="-onlyrole", inline=False)
+                    embed.add_field(name="Everyone can use the bot", value="-everyone", inline=False)
+
+                if args[0] == "listing":
+                    embed.add_field(name="--------------", value="------ Listing Commands ------", inline=False)
+
+                    embed.add_field(name="Lists all files (max files that the bot can list: 625, admin only)", value="-files", inline=False)
+                    embed.add_field(name="Lists your perms.", value="-userperms", inline=False)
+
+                if args[0] == "other":
+                    embed.add_field(name="--------------", value="------ Other Commands ------", inline=False)
+
+                    embed.add_field(name="Embed anything you want!", value="-embed {'TITLE'} {'TEXT'}", inline=False)
+                    embed.add_field(name="Show the amount of servers where the bot is online", value="-guilds", inline=False)
+                    embed.add_field(name="Show the Bots ping", value="-ping", inline=False)
+                    embed.add_field(name="Shows the invite link.", value="-invite", inline=False)
+
+            except:
+                embed.add_field(name="Help for saving files:", value="-help save", inline=False)
+                embed.add_field(name="Help for reading / showing files:", value="-help read", inline=False)
+                embed.add_field(name="Help for deleting files:", value="-help delete", inline=False)
+                embed.add_field(name="Help for file / command permissions:", value="-help perms", inline=False)
+                embed.add_field(name="Help for listing all files / listing your perms:", value="-help listing", inline=False)
+                embed.add_field(name="Help for other stuffs:", value="-help other", inline=False)
+
+            embed.add_field(name="If you like the bot please vote for it on top.gg.", value="https://top.gg/bot/670754613820915714/vote", inline=False)
+            embed.add_field(name="Support me, the maker by subscribing to me on youtube.", value="https://www.youtube.com/channel/UCMiR4h60k6DJPrWgvTY6soQ", inline=False)
+
+            await ctx.send(embed=embed)
+
+# SAVING
+    @bot.command()
+    async def savepic(ctx, content, name):
+        if await Functions.check_perm(ctx):
+            try:
+                file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, ctx.message.author,name)), "a+")
+                file.write(content)
+                file.close()
+            except:
+                os.mkdir(os.path.join(fileDir, '{}'.format(ctx.guild.id)))
+                file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, ctx.message.author,name)), "a+")
+                file.write(content)
+                file.close()
+
+            await Functions.embed(ctx, "Successfully saved!", "'" + content + "' was saved in '" + name + "' type '-read " + name + "' to see your saved data")
+
+            dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+            open(dclistfile, "a+")
+
+            found = False
+            with open(dclistfile) as f:
+                if '"' + name + '" (pic) Author: ' + str(ctx.message.author) + "\n" in f.read():
+                    found = True
         
-        except json.JSONDecodeError as e:
-            print("[Error] " + str(e))
-        
-        # except Exception as e:
-        #   print("Error: " + str(e))
-        
-        await bot.process_commands(message)
-    
-    bot.run(TOKEN)
+            if found == False:
+                dclist = open(dclistfile, "a")
+                name = '"' + name + '" (pic) Author: ' + str(ctx.message.author) + "\n"
+                dclist.write(name)
+                dclist.close
+
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def savepicglobal(ctx, content, name):
+        if await Functions.check_perm(ctx):
+            try:
+                file = open(os.path.join(fileDir, '{}/{}.{}.dcsavepicglobal'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                file.write(content)
+                file.close()
+            except:
+                os.mkdir(os.path.join(fileDir, '{}'.format(ctx.guild.id)))
+                file = open(os.path.join(fileDir, '{}/{}.{}.dcsavepicglobal'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                file.write(content)
+                file.close()
+
+            await Functions.embed(ctx, "Successfully saved!", "'" + content + "' was saved in '" + name + "' type '-read " + name + "' to see your saved data. This save is global. Everyone can se it.")
+
+            dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+            open(dclistfile, "a+")
+
+            found = False
+            with open(dclistfile) as f:
+                if '"' + name + '" (pic) Author: ' + str(ctx.message.author) in f.read():
+                    found = True
+
+            if found == False:
+                dclist = open(dclistfile, "a")
+                name = '"' + name + '" (pic) Author: ' + str(ctx.message.author) + "\n"
+                dclist.write(name)
+                dclist.close
+
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def list(ctx, para, name, *args):
+        if await Functions.check_perm(ctx):
+
+            if para == 'make':
+                try:
+                    file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)),"a+")
+                    file.write("")
+                    file.close()
+
+                    dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                    open(dclistfile, "a+")
+
+                    found = False
+                    with open(dclistfile) as f:
+                        if '"' + name + '"' in f.read():
+                            found = True
+
+                    if found == False:
+                        dclist = open(dclistfile, "a")
+                        name2 = '"' + name + '" Owner: ' + str(ctx.message.author) + "\n"
+                        dclist.write(name2)
+                        dclist.close
+
+                except:
+                    await Functions.embed(ctx, "Error!", "uh oh! this error is fatal! join the support server and tell Fguzy#5577 aka the bot owner about this!")
+
+                await Functions.embed(ctx, "List made: '" + name + "'", "type '-list add " + name + " {CONTENT}' to add a line")
+
+            elif para == 'add':
+                try:
+                    file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "r")
+                    file.close()
+                    file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "a+")
+                    if file.readlines() == 0:
+                        file.write(args[0] + "\n")
+                    else:
+                        file.write("\n" + args[0])
+
+                    file.close()
+                except:
+                    await Functions.embed(ctx, "Error!", "This file does not exist.")
+
+                await Functions.embed(ctx, "Successfully added point!", "'" + args[0] + "' was saved in '" + name + "' type '-read " + name + "' to see your saved list")
+
+            elif para == 'change':
+                try:
+                    file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "r")
+                    lines = file.readlines()
+                    file.close()
+
+                    lines = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "r").read().splitlines()
+                    lines[int(args[0])] = args[1]
+                    open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), 'w').write('\n'.join(lines))
+
+                    await Functions.embed(ctx, "Successfully changed!", "line '" + args[0] + "' was changed to '" + args[1])
+                except:
+
+                    await Functions.embed(ctx, "Error!", "This file or line does not exist.")
+
+            elif para == 'remove':
+                try:
+                    a_file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "r")
+                    lines = a_file.readlines()
+                    a_file.close()
+                    del lines[int(args[0])]
+                    new_file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "w+")
+                    for line in lines:
+                        new_file.write(line)
+                    new_file.close()
+
+                    await Functions.embed(ctx, "Successfully deleted!", "line was deleted.")
+                except:
+                    await Functions.embed(ctx, "Error!", "This file or line does not exist.")
+            else:
+                await Functions.embed(ctx, "Error!", "Use 'make', 'add', 'change' or 'remove'. For help type '-help'")
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def listglobal(ctx, para, name, *args):
+        if await Functions.check_perm(ctx):
+
+            if para == 'make':
+                try:
+                    file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                    file.write("")
+                    file.close()
+
+                    dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                    open(dclistfile, "a+")
+
+                    found = False
+                    with open(dclistfile) as f:
+                        if '"' + name + '"' in f.read():
+                            found = True
+
+                    if found == False:
+                        dclist = open(dclistfile, "a")
+                        name2 = '"' + name + '" Author: ' + str(ctx.message.author) + "\n"
+                        dclist.write(name2)
+                        dclist.close
+
+                except:
+                    await Functions.embed(ctx, "Error!", "uh oh! this error is fatal! join the support server and tell Fguzy#5577 aka the bot owner about this!")
+
+                await Functions.embed(ctx, "List made: '" + name + "'", "type '-list add " + name + " {CONTENT}' to add a line")
+
+            elif para == 'add':
+                try:
+                    file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "r")
+                    file.close()
+                    file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                    if file.readlines() == 0:
+                        file.write(args[0] + "\n")
+                    else:
+                        file.write("\n" + args[0])
+
+                    file.close()
+                except:
+                    await Functions.embed(ctx, "Error!", "This file does not exist.")
+
+                await Functions.embed(ctx, "Successfully added point!", "'" + args[0] + "' was saved in '" + name + "' type '-read " + name + "' to see your saved list")
+
+            elif para == 'change':
+                try:
+                    file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "r")
+                    lines = file.readlines()
+                    file.close()
+
+                    lines = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "r").read().splitlines()
+                    lines[int(args[0])] = args[1]
+                    open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), 'w').write('\n'.join(lines))
+
+                    await Functions.embed(ctx, "Successfully changed!", "line '" + args[0] + "' was changed to '" + args[1])
+                except:
+                    await Functions.embed(ctx, "Error!", "This file or line does not exist.")
+
+            elif para == 'remove':
+                try:
+                    a_file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "r")
+                    lines = a_file.readlines()
+                    a_file.close()
+                    del lines[int(args[0])]
+                    new_file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "w+")
+                    for line in lines:
+                        new_file.write(line)
+                    new_file.close()
+
+                    await Functions.embed(ctx, "Successfully deleted!", "line was deleted.")
+                except:
+                    await Functions.embed(ctx, "Error!", "This file or line does not exist.")
+            else:
+                await Functions.embed(ctx, "Error!", "Use 'make', 'add', 'change' or 'remove'. For help type '-help'")
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def save(ctx, content, name):
+        if await Functions.check_perm(ctx):
+            try:
+                file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "a+")
+                file.write(content)
+                file.close()
+            except:
+                os.mkdir(os.path.join(fileDir, '{}'.format(ctx.guild.id)))
+                file = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)), "a+")
+                file.write(content)
+                file.close()
+
+            await Functions.embed(ctx, "Successfully saved!", "'" + content + "' was saved in '" + name + "' type '-read " + name + "' to see your saved data")
+
+            dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+            open(dclistfile, "a+")
+
+            found = False
+            with open(dclistfile) as f:
+                if '"' + name + '" Owner: ' + str(ctx.message.author) in f.read():
+                    found = True
+
+            if found == False:
+                dclist = open(dclistfile, "a")
+                name = '"' + name + '" Owner: ' + str(ctx.message.author) + "\n"
+                dclist.write(name)
+                dclist.close
+
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def saveglobal(ctx, content, name):
+        if await Functions.check_perm(ctx):
+            try:
+                file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                file.write(content)
+                file.close()
+            except:
+                os.mkdir(os.path.join(fileDir, '{}'.format(ctx.guild.id)))
+                file = open(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                file.write(content)
+                file.close()
+
+            await Functions.embed(ctx, "Successfully saved!", "'" + content + "' was saved in '" + name + "' type '-read " + name + "' to see your saved data. This save is global. Everyone can se it.")
+
+            dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+            open(dclistfile, "a+")
+
+            found = False
+            with open(dclistfile) as f:
+                if '"' + name + '" Author: ' + str(ctx.message.author) in f.read():
+                    found = True
+
+            if found == False:
+                dclist = open(dclistfile, "a")
+                name = '"' + name + '" Author: ' + str(ctx.message.author) + "\n"
+                dclist.write(name)
+                dclist.close
+
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+# READING
+    @bot.command()
+    async def read(ctx, name):
+        if await Functions.check_perm(ctx):
+            try:
+                filename = os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name))
+                file = open(filename, "r")
+
+                await Functions.embed(ctx, name, file.read())
+
+                file.close()
+            except:
+                try:
+                    filename = os.path.join(fileDir, '{}/{}.{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name))
+                    file = open(filename, "r")
+
+                    await ctx.send(file.read())
+
+                    file.close()
+                except:
+                    try:
+                        filename = os.path.join(fileDir, '{}/{}.{}.dcsavepicglobal'.format(ctx.guild.id, ctx.guild.id, name))
+                        file = open(filename, "r")
+
+                        await ctx.send(file.read())
+
+                        file.close()
+                    except:
+                        try:
+                            filename = os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name))
+                            file = open(filename, "r")
+
+                            embed = discord.Embed(
+                                title=name,
+                                description=file.read(),
+                                colour=0x34b713
+                            )
+                            embed.set_footer(text="NOTE: This file is old. to be compatible with permissions, please make a new file containing the content of this file.")
+                            await ctx.send(embed=embed)
+
+                            file.close()
+                        except:
+                            try:
+                                filename = os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name))
+                                file = open(filename, "r")
+
+                                embed = discord.Embed(
+                                    title=name,
+                                    description=file.read(),
+                                    colour=0x34b713
+                                )
+                                embed.set_footer(text="Global File")
+                                await ctx.send(embed=embed)
+
+                                file.close()
+                            except:
+                                try:
+                                    if await Functions.check_userperm(ctx, name):
+                                        test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+                                        lines = test.readlines()
+                                        for line in lines:
+                                            if '"' + name + '"' in line:
+                                                string = line.replace('"' + name + '"' + ' Owner: ', "")
+                                                if string.endswith("\n"):
+                                                    string = string[:-1]
+
+                                        filename = os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, string, name))
+                                        file = open(filename, "r")
+
+                                        await Functions.embed(ctx, name, file.read())
+
+                                        file.close()
+
+                                    elif ctx.message.author.server_permissions.administrator:
+                                        try:
+                                            filename = os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name))
+                                            file = open(filename, "r")
+
+                                            await Functions.embed(ctx, name, file.read())
+
+                                            file.close()
+                                        except:
+                                            filename = os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name))
+                                            file = open(filename, "r")
+
+                                            embed = discord.Embed(
+                                                title=name,
+                                                description=file.read(),
+                                                colour=0x34b713
+                                            )
+                                            embed.set_footer(text="NOTE: This file is old. to be compatible with permissions, please make a new file containing the content of this file.")
+                                            await ctx.send(embed=embed)
+
+                                            file.close()
+                                    else:
+                                        await Functions.embed(ctx, "Error", "There is no such file called '" + name + "' or you do not have the permission to read the file.")
+
+                                except:
+                                    await Functions.embed(ctx, "Error", "There is no such file called '" + name + "' or you do not have the permission to read the file.")
+
+
+
+        else:
+            await Functions.embed(ctx, "Error", "There is no such file called '" + name + "' or you do not have the permission to read the file.")
+
+    @bot.command()
+    @commands.has_permissions(administrator=True)
+    async def adminread(ctx, name):
+        try:
+            test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+            lines = test.readlines()
+            for line in lines:
+                if '"' + name + '"' in line:
+                    string = line.replace('"' + name + '"' + ' Owner: ', "")
+                    if string.endswith("\n"):
+                        string = string[:-1]
+
+            filename = os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, string, name))
+            file = open(filename, "r")
+
+            await Functions.embed(ctx, name, file.read())
+
+            file.close()
+        except:
+            try:
+                for line in lines:
+                    if '"' + name + '"' in line:
+                        string = line.replace('"' + name + '"' + ' (pic) Owner: ', "")
+                        if string.endswith("\n"):
+                            string = string[:-1]
+
+                filename = os.path.join(fileDir, '{}/{}.{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, string, name))
+                file = open(filename, "r")
+
+                await ctx.send(file.read())
+
+                file.close()
+            except:
+                try:
+
+                    filename = os.path.join(fileDir, '{}/{}.{}.dcsavepicglobal'.format(ctx.guild.id, ctx.guild.id, name))
+                    file = open(filename, "r")
+
+                    await ctx.send(file.read())
+
+                    file.close()
+                except:
+                    try:
+                        filename = os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name))
+                        file = open(filename, "r")
+
+                        embed = discord.Embed(
+                            title=name,
+                            description=file.read(),
+                            colour=0x34b713
+                        )
+                        embed.set_footer(text="NOTE: This file is old. to be compatible with permissions, please make a new file containing the content of this file.")
+                        await ctx.send(embed=embed)
+
+                        file.close()
+                    except:
+                        try:
+                            filename = os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name))
+                            file = open(filename, "r")
+
+                            embed = discord.Embed(
+                                title=name,
+                                description=file.read(),
+                                colour=0x34b713
+                            )
+                            embed.set_footer(text="Global File")
+                            await ctx.send(embed=embed)
+
+                            file.close()
+                        except:
+                            await Functions.embed(ctx, "Error!", "This file does not exist.")
+
+# DELETING
+    @bot.command()
+    @commands.has_permissions(administrator=True)
+    async def admindelete(ctx, name):
+        try:
+            test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+            lines = test.readlines()
+            for line in lines:
+                if '"' + name + '"' in line:
+                    string = line.replace('"' + name + '"' + ' Owner: ', "")
+                    if string.endswith("\n"):
+                        string = string[:-1]
+
+            os.remove(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, string, name)))
+
+            await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+            file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+            tostrip = '"' + name + '" Owner: ' + str(string)
+
+            with open(file, "r") as f:
+                lines = f.readlines()
+
+            with open(file, "w") as f:
+                for line in lines:
+                    if line.strip("\n") != tostrip:
+                        f.write(line)
+        except:
+            try:
+                os.remove(os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, string, name)))
+
+                await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                tostrip = '"' + name + '"'
+
+                with open(file, "r") as f:
+                    lines = f.readlines()
+
+                with open(file, "w") as f:
+                    for line in lines:
+                        if line.strip("\n") != tostrip:
+                            f.write(line)
+            except:
+                try:
+                    test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+                    lines = test.readlines()
+                    for line in lines:
+                        if '"' + name + '"' in line:
+                            string = line.replace('"' + name + '"' + ' (pic) Owner: ', "")
+                            if string.endswith("\n"):
+                                string = string[:-1]
+
+                    os.remove(os.path.join(fileDir, '{}/{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                    await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                    file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                    tostrip = '"' + name + '" (pic) Author: ' + string
+
+                    with open(file, "r") as f:
+                        lines = f.readlines()
+
+                    with open(file, "w") as f:
+                        for line in lines:
+                            if line.strip("\n") != tostrip:
+                                f.write(line)
+                except:
+                    try:
+                        test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+                        lines = test.readlines()
+                        for line in lines:
+                            if '"' + name + '"' in line:
+                                string = line.replace('"' + name + '"' + ' (pic) Author: ', "")
+                                if string.endswith("\n"):
+                                    string = string[:-1]
+
+                        os.remove(os.path.join(fileDir, '{}/{}.{}.dcsavepicglobal'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                        await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                        file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                        tostrip = '"' + name + '" (pic) Author: ' + string
+
+                        with open(file, "r") as f:
+                            lines = f.readlines()
+
+                        with open(file, "w") as f:
+                            for line in lines:
+                                if line.strip("\n") != tostrip:
+                                    f.write(line)
+                    except:
+                        try:
+                            os.remove(
+                                os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                            await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                            test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+                            lines = test.readlines()
+                            for line in lines:
+                                if '"' + name + '"' in line:
+                                    string = line.replace('"' + name + '"' + ' Author: ', "")
+                                    if string.endswith("\n"):
+                                        string = string[:-1]
+
+                            file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                            tostrip = '"' + name + '" Author: ' + str(string)
+
+                            with open(file, "r") as f:
+                                lines = f.readlines()
+
+                            with open(file, "w") as f:
+                                for line in lines:
+                                    if line.strip("\n") != tostrip:
+                                        f.write(line)
+                        except:
+                            await Functions.embed(ctx, "Error", "There is no such file called '" + name + "' or you don't have the permission.")
+
+    @bot.command()
+    async def delete(ctx, name):
+        if await Functions.check_perm(ctx):
+            try:
+                os.remove(os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                tostrip = '"' + name + '"'
+
+                with open(file, "r") as f:
+                    lines = f.readlines()
+
+                with open(file, "w") as f:
+                    for line in lines:
+                        if line.strip("\n") != tostrip:
+                            f.write(line)
+            except:
+                try:
+                    os.remove(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)))
+
+                    await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                    file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                    tostrip = '"' + name + '" Owner: ' + str(ctx.message.author)
+
+                    with open(file, "r") as f:
+                        lines = f.readlines()
+
+                    with open(file, "w") as f:
+                        for line in lines:
+                            if line.strip("\n") != tostrip:
+                                f.write(line)
+                except:
+                    try:
+                        os.remove(os.path.join(fileDir, '{}/{}.{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, name)))
+
+                        await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                        file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                        tostrip = '"' + name + '" (pic) Owner: ' + str(ctx.message.author)
+
+                        with open(file, "r") as f:
+                            lines = f.readlines()
+
+                        with open(file, "w") as f:
+                            for line in lines:
+                                if line.strip("\n") != tostrip:
+                                    f.write(line)
+                    except:
+                        try:
+                            test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+                            lines = test.readlines()
+                            for line in lines:
+                                if '"' + name + '"' in line:
+                                    string = line.replace('"' + name + '"' + ' (pic) Author: ', "")
+                                    if string.endswith("\n"):
+                                        string = string[:-1]
+
+                            os.remove(os.path.join(fileDir, '{}/{}.{}.dcsavepicglobal'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                            await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                            file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                            tostrip = '"' + name + '" (pic) Author: ' + string
+
+                            with open(file, "r") as f:
+                                lines = f.readlines()
+
+                            with open(file, "w") as f:
+                                for line in lines:
+                                    if line.strip("\n") != tostrip:
+                                        f.write(line)
+                        except:
+                            try:
+                                os.remove(os.path.join(fileDir, '{}/{}.{}.dcsaveglobal'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                                await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                                test = open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)))
+                                lines = test.readlines()
+                                for line in lines:
+                                    if '"' + name + '"' in line:
+                                        string = line.replace('"' + name + '"' + ' Author: ', "")
+                                        if string.endswith("\n"):
+                                            string = string[:-1]
+
+                                file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                                tostrip = '"' + name + '" Author: ' + str(string)
+
+                                with open(file, "r") as f:
+                                    lines = f.readlines()
+
+                                with open(file, "w") as f:
+                                    for line in lines:
+                                        if line.strip("\n") != tostrip:
+                                            f.write(line)
+                            except:
+                                await Functions.embed(ctx, "Error", "There is no such file called '" + name + "' or you don't have the permission.")
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+# LISTING
+    @bot.command(pass_context=True)
+    async def files(ctx):
+        file_lines_2 = ""
+        file_lines = []
+        counter = 0
+        if await Functions.check_perm(ctx):
+            embed = discord.Embed(
+                title="All saved files on this server:",
+                description="",
+                colour=0x34b713
+            )
+
+            try:
+                with open(os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)), "r") as file:
+
+                    for line in file:
+                        file_lines.append(line + "\n")
+                        counter += 1
+                        if counter == 24:
+                            for thing in file_lines:
+                                file_lines_2 = str(file_lines_2) + str(thing)
+
+                            embed.add_field(name="25 files:", value=file_lines_2, inline=False)
+                            file_lines = []
+                            file_lines_2 = []
+                            counter = 0
+
+                    for thing in file_lines:
+                        file_lines_2 = str(file_lines_2) + str(thing)
+
+                    embed.add_field(name="the rest:", value=file_lines_2, inline=False)
+                    file_lines = []
+                    file_lines_2 = []
+
+                await ctx.send(embed=embed)
+            except:
+                await Functions.embed(ctx, "All saved files on this server:",
+                                      "There are no files saved on this server.")
+
+# PERMS
+    @bot.command(pass_context=True)
+    async def userperm(ctx, file, user: discord.Member, add_delete):
+        if add_delete == "add":
+            try:
+                open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, file)), "r")
+                userfile = open(os.path.join(fileDir, '{}/{}.{}.dcuser'.format(ctx.guild.id, ctx.guild.id, user)), "a+")
+                write = '"' + file + '"' + '\n'
+                userfile.write(write)
+                userfile.close()
+                await Functions.embed(ctx, "Successfully set permissions.", "The user now has the permissions to view that file.")
+            except:
+                await Functions.embed(ctx, "Error!", "You don't own that file or it doesn't exist.")
+
+        elif add_delete == "delete":
+            try:
+                open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, file)), "r")
+
+                userfile = os.path.join(fileDir, '{}/{}.{}.dcuser'.format(ctx.guild.id, ctx.guild.id, user))
+
+                fn = userfile
+                f = open(fn)
+                output = []
+                str = '"' + file + '"'
+                for line in f:
+                    if not line.startswith(str):
+                        output.append(line)
+                f.close()
+                f = open(fn, 'w')
+                f.writelines(output)
+                f.close()
+
+                await Functions.embed(ctx, "Successfully deleted permissions.", "you deleted the permissions for this file for that user.")
+
+            except:
+                await Functions.embed(ctx, "Error!", "You don't own that file, it doesn't exist or the user doesn't have the permissions for it.")
+
+        else:
+            await Functions.embed(ctx, "Error!", "Use 'add' or 'delete'. For help type '-help'")
+
+    @bot.command(pass_context=True)
+    async def userperms(ctx, *args):
+        if await Functions.check_perm(ctx):
+            embed = discord.Embed(
+                title="Your perms:",
+                description="",
+                colour=0x34b713
+            )
+
+            try:
+                file = open(
+                    os.path.join(fileDir, '{}/{}.{}.dcuser'.format(ctx.guild.id, ctx.guild.id, ctx.message.author)),
+                    "r")
+                embed.add_field(name="Files:", value=file.read(), inline=False)
+                await ctx.send(embed=embed)
+
+            except:
+                await Functions.embed(ctx, "All saved files on this server:",
+                                      "There are no files saved on this server.")
+
+    @bot.command(pass_context=True)
+    @commands.has_permissions(administrator=True)
+    async def onlyrole(ctx):
+        await ctx.guild.create_role(name="Nota perms")
+        open(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)), "w+")
+        await Functions.embed(ctx, "Yay!",
+                              "Perms enabled. ONLY people with the 'Nota perms' role can use the bot. Administrators can always type '-disableperms' to disable the perms.")
+
+    @bot.command(pass_context=True)
+    @commands.has_permissions(administrator=True)
+    async def everyone(ctx):
+        try:
+            open(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)), "a+")
+            role = discord.utils.get(ctx.guild.roles, name="Nota perms")
+            if role:
+                try:
+                    os.remove(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)))
+                    await Functions.embed(ctx, "Perms Disabled.",
+                                          "The Perms have been disabled and everyone can use the bot now. You can now delete the 'Nota perms role. You don't have to keep it.'")
+                except discord.Forbidden:
+                    await Functions.embed(ctx, "Error!",
+                                          "No Permission to delete the 'Nota perms' role. Please move the 'Nota' role over the 'Nota perms' role and try again.")
+            else:
+                await bot.say("The role doesn't exist!")
+        except:
+            await Functions.embed(ctx, "Error!", "Perms are already disabled. type '-enableperms' to enable perms.")
+
+# OTHER STUFF
+    @bot.command(pass_context=True)
+    async def ping(ctx):
+        if await Functions.check_perm(ctx):
+            before = time.monotonic()
+            message = await ctx.send("Pong!")
+            ping = (time.monotonic() - before) * 1000
+            await message.edit(content=f"Pong!  `{int(ping)}ms`")
+
+    @bot.command(pass_context=True)
+    async def embed(ctx, title, text):
+        await Functions.embed(ctx, title, text)
+
+    @bot.command(pass_context=True)
+    async def guilds(ctx):
+        if await Functions.check_perm(ctx):
+            await Functions.embed(ctx, "This bot is on this many servers:", len(bot.guilds))
+
+    @bot.command(pass_context=True)
+    async def share(ctx, file, share):
+        if await Functions.check_perm(ctx):
+            try:
+                savefile = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, file)), "r")
+
+                sharesavefile = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(share, share, ctx.message.author,file)), "a")
+                sharelistfile = open(os.path.join(fileDir, '{}/{}.dclist'.format(share, share)), "a")
+            
+                sharesavefile.write(savefile.read())
+                sharelistfile.write('"' + file + '" Owner: ' + str(ctx.message.author))
+                sharelistfile.close()
+                sharesavefile.close()
+                savefile.close()
+
+                await Functions.embed(ctx, "Yay!", "Successfully shared '" + file + "' to '" + share + "'")
+
+            except:
+                try:
+                    savefile = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsavepic'.format(ctx.guild.id, ctx.guild.id, ctx.message.author, file)), "r")
+
+                    sharesavefile = open(os.path.join(fileDir, '{}/{}.{}.{}.dcsave'.format(share, share, ctx.message.author, file)), "a")
+                    sharelistfile = open(os.path.join(fileDir, '{}/{}.dclist'.format(share, share)), "a")
+
+                    sharesavefile.write(savefile.read())
+                    sharelistfile.write('"' + file + '" (pic) Owner: ' + str(ctx.message.author))
+                    sharelistfile.close()
+                    sharesavefile.close()
+                    savefile.close()
+
+                    await Functions.embed(ctx, "Yay!", "Successfully shared '" + file + "' to '" + share + "'")
+
+                except:
+                    await Functions.embed(ctx, "Error!", "A problem occured while trying to share '" + file + "' to '" + share + ". does the file exist? Have you entered a valid guild id?")
+            
+    @bot.command()
+    async def invite(ctx):
+        await Functions.embed(ctx, "Invite Link:", "https://discordapp.com/oauth2/authorize?client_id=670754613820915714&permissions=268439552&scope=bot")
+
+print("[ OK ] Nota was loaded into memory.")
+print()
+print("Nota is starting... ")
+
+bot.run(TOKEN)
