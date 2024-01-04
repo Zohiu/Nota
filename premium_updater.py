@@ -52,7 +52,6 @@ if __name__ == '__main__':
         else:
             print('Not Found.')
 
-
         time.sleep(5)
         now = str(datetime.datetime.now()).split(".")[0][:-9]
         now = datetime.datetime.strptime(now, '%Y-%m-%d')
@@ -68,10 +67,10 @@ if __name__ == '__main__':
 
                         if str(tdelta)[0] == "-":
                             alllines.remove(line)
-                            with open("premium.users", "w") as users:
-                                for line in alllines:
-                                    if not line == "":
-                                        done += line
+                            with open("premium.users", "w") as users1:
+                                for line1 in alllines:
+                                    if not line1 == "":
+                                        done += line1
 
                                 with open("premium.users", "w") as f:
                                     f.write(done)

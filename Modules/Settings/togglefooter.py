@@ -18,7 +18,8 @@ async def run(message, prefix, msglst, id):  # PREMIUM
         with open(os.path.join(fileDir, '{}.json'.format(id)), "w") as file:
             file.write(json.dumps(s))
 
-        await Functions.embed(message, "Footer toggled!", "New state: " + str(s["settings"]["read_footer"]))
+        await Functions.embed(message, "<:nota_success:796499295980617739> New state: " + str(s["settings"]["read_footer"]))
         del s
+        await Functions.bot_used(message, "togglefooter", message.channel.type)
     else:
-        await Functions.embed(message, "Error!", "You need at least premium ultra to use this command!")
+        await Functions.embed(message, "<:nota_error:796499987949027349> You need at least premium ultra to use this command!")

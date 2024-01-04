@@ -16,4 +16,4 @@ async def run(message, msglst):
 
         await Functions.bot_used(message, "calc", message.channel.type)
     else:
-        await Functions.embed(message, "Error!", "You need at least premium default to use this command!")
+        await Functions.embed(message, "<:nota_error:796499987949027349> You need at least premium default to use this command!")

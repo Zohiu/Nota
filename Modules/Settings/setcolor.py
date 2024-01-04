@@ -23,13 +23,12 @@ async def run(message, prefix, msglst, id):  # PREMIUM
             with open(os.path.join(fileDir, '{}.json'.format(id)), "w") as file:
                 file.write(json.dumps(s))
 
-            await Functions.embed(message, "Color changed!", "New color: " + msglst[1])
+            await Functions.embed(message, "<:nota_success:796499295980617739> New color: " + msglst[1])
 
-            await Functions.bot_used(message, "changecolor", message.channel.type)
+            await Functions.bot_used(message, "setcolor", message.channel.type)
 
         except ValueError:
-            await Functions.embed(message, "Error!",
-                                  "You have to use a hex color. You can generate hex colors here: https://www.rapidtables.com/convert/color/rgb-to-hex.html\nUsage: changecolor <colorhex>")
+            await Functions.embed(message, "<:nota_error:796499987949027349> You have to use a hex color. You can generate hex colors here: https://www.rapidtables.com/convert/color/rgb-to-hex.html\nUsage: changecolor <colorhex>")
 
         del s
     else:

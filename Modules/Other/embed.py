@@ -8,8 +8,8 @@ async def run(message, prefix, msglst):
         try:
             await Functions.embed(message, msglst[1], msglst[2])
         except:
-            await Functions.embed(message, "Error!", "Usage: '" + prefix + "embed <title> <content>'")
+            await Functions.embed(message, "<:nota_error:796499987949027349> Usage: '" + prefix + "embed <title> <content>'")
         await Functions.bot_used(message, "embed", message.channel.type)
 
     else:
-        await Functions.embed(message, "Error!", "You need at least premium pro to use this command!")
+        await Functions.embed(message, "<:nota_error:796499987949027349> You need at least premium pro to use this command!")

@@ -4,6 +4,7 @@ import os
 
 fileDir = os.path.join(os.getcwd(), "Files")
 
+
 async def run(message, prefix, msglst, id):
     file = open(os.path.join(fileDir, '{}.json'.format(id)), "r")
     s = json.loads(file.read())
@@ -19,21 +20,22 @@ async def run(message, prefix, msglst, id):
             found = True
     if found:
         open(os.path.join(fileDir, '{}.json'.format(id)), "w").write(json.dumps(s))
-        await Functions.embed(message, "Successfully deleted!", "The file has been deleted.")
+        await Functions.embed(message, "<:nota_success:796499295980617739> The file has been deleted.")
 
     elif not found:
         done = False
-        for d in os.walk(os.path.join(fileDir, str(message.guild.id))):
+        for d in os.walk(id):
             for f in d:
                 for string in f:
-                    if len(string.split(".")) > 1 and not "dcsave" or not "dcsaveraw" or not "dcfilesave" in string:
+                    if len(string.split(".")) > 1 and not "json" in string:
                         if string.split(".")[0] == msglst[1]:
-                            os.remove(os.path.join(fileDir, '{}/{}'.format(str(message.guild.id), string)))
+                            os.remove(os.path.join(id, string))
 
-                            if os.path.exists(os.path.join(fileDir, '{}/{}'.format(str(message.guild.id), msglst[1] + ".dcfilesave"))):
-                                os.remove(os.path.join(fileDir, '{}/{}'.format(str(message.guild.id), msglst[1] + ".dcfilesave")))
+                            if os.path.exists(os.path.join(id, string)):
+                                os.remove(os.path.join(id, string))
 
-                            await Functions.embed(message, "'" + msglst[1] + "' has been deleted.", "This action can't be undone.")
+                            await Functions.embed(message,
+                                                  "<:nota_success:796499295980617739> The file has been deleted.")
                             done = True
 
                             file = os.path.join(fileDir, '{}/dc.list'.format(message.guild.id))
@@ -47,6 +49,8 @@ async def run(message, prefix, msglst, id):
                                     if line.strip("\n") != tostrip:
                                         fl.write(line)
         if not done:
-            await Functions.embed(message, "Error", "There is no such file called '" + msglst[1] + "'.")
+            msglst += " "
+            await Functions.embed(message,
+                                  "<:nota_error:796499987949027349> There is no such file called '" + msglst[1] + "'.")
 
     await Functions.bot_used(message, "delete", message.channel.type)

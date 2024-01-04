@@ -1,3 +1,4 @@
+from discord.abc import PrivateChannel
 from Modules import encryptor
 import Functions
 import discord
@@ -10,6 +11,13 @@ async def run(message, prefix, msglst, id):
     file = open(os.path.join(fileDir, '{}.json'.format(id)), "r")
     s = json.loads(file.read())
     file.close()
+
+    all_following = ""
+    for i in msglst:
+        if msglst.index(i) > 0:
+            all_following += i + " "
+
+    msglst[1] = all_following[:-1]
 
     type = "text"
 
@@ -37,11 +45,17 @@ async def run(message, prefix, msglst, id):
         executed = True
         repeat = False
         done = False
-        for d in os.walk(os.path.join(fileDir, str(message.guild.id))):
+
+        if isinstance(message.channel, PrivateChannel):
+            id2 = str(message.author.id)
+        else:
+            id2 = str(message.guild.id)
+
+        for d in os.walk(os.path.join(fileDir, id2)):
             for f in d:
                 for string in f:
                     if len(string.split(".")) > 1 and not "json" in string:
-                        if string.split(".")[0] == msglst[1]:
+                        if msglst[1] in string.split(".")[0]:
                             if not repeat:
                                 if str(message.channel.type) == "private":
                                     id2 = str(message.author.id)
@@ -51,7 +65,7 @@ async def run(message, prefix, msglst, id):
                                 done = True
                                 fileformat = string.split(".")[-1]
                                 open(os.path.join(fileDir, "{}/{}".format(id2, string)))
-                                file = discord.File(os.path.join(fileDir, "{}/{}".format(str(message.guild.id), string)), filename=msglst[1] + "." + str(fileformat), spoiler=False)
+                                file = discord.File(os.path.join(os.path.join(os.path.join(fileDir, id2), string)), filename=msglst[1] + "." + str(fileformat), spoiler=False)
                                 try:
                                     msg = content
                                     repeat = True
@@ -62,11 +76,11 @@ async def run(message, prefix, msglst, id):
                             else:
                                 return
         if not done:
-            await Functions.embed(message, "Error", "There is no such file called '" + msglst[1] + "'.")
+            await Functions.embed(message, "<:nota_error:796499987949027349> There is no such file called '" + msglst[1] + "'.")
 
     if not executed:
-        await Functions.embed(message, "Error", "There is no such file called '" + msglst[1] + "'.")
+        await Functions.embed(message, "<:nota_error:796499987949027349> There is no such file called '" + msglst[1] + "'.")
 
-    del existing, content, footer, type, executed, s
+    del existing, type, executed, s
 
-    await Functions.bot_used(message, "save", message.channel.type)
+    await Functions.bot_used(message, "read", message.channel.type)

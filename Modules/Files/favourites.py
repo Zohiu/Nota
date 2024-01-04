@@ -37,13 +37,13 @@ async def run(message, bot, msglst, id):
                         with open(os.path.join(fileDir, '{}.json'.format(id)), "w") as file:
                             file.write(json.dumps(s))
 
-                        await Functions.embed(message, "Success!", msglst[2] + " has been added to your favourites!")
+                        await Functions.embed(message, "<:nota_success:796499295980617739> " + msglst[2] + " has been added to your favourites!")
                     else:
-                        await Functions.embed(message, "Error!", "You have reached the favourite file limit.")
+                        await Functions.embed(message, "<:nota_error:796499987949027349> You have reached the favourite file limit.")
                 else:
-                    await Functions.embed(message, "Error!", "This file does not exist.")
+                    await Functions.embed(message, "<:nota_error:796499987949027349> This file does not exist.")
             else:
-                await Functions.embed(message, "Error!", "You already added that file.")
+                await Functions.embed(message, "<:nota_error:796499987949027349> You already added that file.")
 
         elif msglst[1] == "remove":
             with open(os.path.join(fileDir, '{}.json'.format(id)), "r") as file:
@@ -60,10 +60,10 @@ async def run(message, bot, msglst, id):
                 with open(os.path.join(fileDir, '{}.json'.format(id)), "w") as file:
                     file.write(json.dumps(s))
 
-                await Functions.embed(message, "Success!", msglst[2] + " has been removed from your favourites!")
+                await Functions.embed(message, "<:nota_success:796499295980617739> " + msglst[2] + " has been removed from your favourites!")
 
             else:
-                await Functions.embed(message, "Error!", "This file is not in your favourites.")
+                await Functions.embed(message, "<:nota_error:796499987949027349> This file is not in your favourites.")
 
         else:
             with open(os.path.join(fileDir, '{}.json'.format(id)), "r") as file:

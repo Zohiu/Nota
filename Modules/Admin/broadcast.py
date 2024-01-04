@@ -5,7 +5,8 @@ import os
 
 fileDir = os.path.join(os.getcwd(), "Files")
 
-async def run(message, prefix, msglst, id, bot):
+
+async def run(message, prefix, msglst, id2, bot):
     if str(message.channel.type) == "private":
         id = os.path.join(str(message.author.id), str(message.author.id))
     else:
@@ -18,20 +19,21 @@ async def run(message, prefix, msglst, id, bot):
     color = s["settings"]["color"]
     embed = discord.Embed(title=msglst[1], description=msglst[2], colour=discord.Color(value=int(color, 16)))
 
-    sentto = 0
-    guilds = []
+    sendto = 0
+    owners = []
 
     for guild in bot.guilds:
-        for channel in guild.channels:
-            if "nota-news" in channel.name:
-                try:
-                    await channel.send(embed=embed)
-                    guilds.append({"name": str(guild), "id": str(guild.id)})
-                    sentto += 1
-                except:
-                    continue
+        owner = guild.owner_id
+        try:
+            if not {"name": str(bot.get_user(owner)), "id": str(guild.owner_id)} in owners:
+                await bot.get_user(owner).send(embed=embed)
+                owners.append({"name": str(bot.get_user(owner)), "id": str(guild.owner_id)})
+                sendto += 1
+        except Exception as e:
+            print(e)
+            continue
 
-    await Functions.embed(message, "Broadcast", "Sent to " + str(sentto) + " guilds!")
+    await Functions.embed(message, "Broadcast", "Sent to " + str(sendto) + " owners!")
 
-    for guild in guilds:
-        await message.channel.send(guild["name"] + " | " + guild["id"])
+    for owner in owners:
+        await message.channel.send(owner["name"] + " | " + owner["id"])
