@@ -1,283 +1,246 @@
-if __name__ == '__main__':
-    from Modules.Settings import setprefix, setcolor, resetcolor, togglefooter, toggleads, togglefavourites
-    from Modules.Files import save, read, delete, files, favourites
-    from Modules.Other import calc, embed, timer, stats, premium
-    from discord.ext.commands import CommandNotFound
-    from Modules import help, privacy, botstats
-    from discord.ext import commands, tasks
-    from discord.abc import PrivateChannel
-    from Modules.Admin import broadcast
-    from discord import errors
-    from nota import version
-    import Functions
-    import shutil
-    import json
-    import time
-    import dbl
-    import os
+# /--------------------------\
+# |  Nota bot code by Fguzy  |
+# |--------------------------|
+# |Version : 1.6 share funct.|
+# \--------------------------/
+
+# Importing the packages
+import os
+import discord
+from discord.ext import commands
+import datetime
+import time
+
+# Defining the Vars
+TOKEN = 'NjgxNTEwNDY0MzkxMzQ4MzA0.XlROUA.OZBHPEk8u5hQiMoEpR_OLYQ_0bk'
+GUILD = discord.Guild
+prefix = "-"
+bot = commands.Bot(prefix)
+dirpath = os.getcwd()
+foldername = os.path.basename(dirpath)
+location = dirpath
+files_in_dir = []
+
+# Removing normal help command
+bot.remove_command("help")
+
+async def save(guild, save, name):
+    file = open("{}.dcsave".format(guild), "a+")
+    file.write(save, name)
+    file.close()
+
+async def helptext(ctx):
+    embed = discord.Embed(
+        title = "Commands:",
+        description = "Prefix : -",
+        colour = 0x34b713
+    )
     
-    TOKEN = open("bot.token", "r").read()
-    bot = commands.Bot("-")
-    bot_updater = bot
-    files_in_dir = []
-    fileDir = os.path.join(os.getcwd(), "Files")
-    start_time = time.time()
+    embed.set_footer(text="© 2020 Nota, A bot by Fguzy#5577.")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
+    embed.set_author(name="Nota Bot help" , icon_url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
+    embed.add_field(name="Nota Bot help", value="-help", inline=False)
+    embed.add_field(name="Save something. (dont forget the '')", value="-save {'TO BE SAVED'} {'FILENAME'}", inline=False)
+    embed.add_field(name="Show you a saved text.", value="-read {'FILENAME'}", inline=False)
+    embed.add_field(name="Delete a file", value="-delete {'FILENAME'}", inline=False)
+    embed.add_field(name="Share a File. (how to get the guild id: Server settings -> Widget -> Server id)", value="-share {'SAVE FILE'} {GUILD ID OF THE RECEIVING SERVER}", inline=False)
+    embed.add_field(name="Lists all files", value="-list", inline=False)
+    embed.add_field(name="Show the amount of servers where the bot is online", value="-botservers", inline=False)
+    embed.add_field(name="Show the Bots ping", value="-ping", inline=False)
+    embed.add_field(name="If you like the bot please vote for it on top.gg.", value="https://top.gg/bot/670754613820915714/vote", inline=False)
+    await ctx.send(embed=embed)
+
+async def savetext(ctx, title, description):
+    embed = discord.Embed(
+        title = title,
+        description = description,
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
     
-    bot.remove_command("help")
+async def readtext(ctx, title, description):
+    embed = discord.Embed(
+        title = title,
+        description = description,
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+
+async def failreadtext(ctx, title, description):
+    embed = discord.Embed(
+        title = title,
+        description = description,
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
     
-    class TopGG(commands.Cog):
-        def __init__(self, bot_in):
-            self.bot = bot_in
-            self.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MDc1NDYxMzgyMDkxNTcxNCIsImJvdCI6dHJ1ZSwiaWF0IjoxNjA3NDMwODA1fQ.7QZw6KUpNc-EyPnhRbYK1tfoMQNJTqzh--I-L9dj2Rk'  # set this to your DBL token
-            self.dblpy = dbl.DBLClient(self.bot, self.token)
-            self.update_stats.start()
-        
-        def cog_unload(self):
-            self.update_stats.cancel()
-        
-        @tasks.loop(minutes=30)
-        async def update_stats(self):
-            await self.bot.wait_until_ready()
-            try:
-                server_count = len(self.bot.guilds)
-                # await self.dblpy.post_guild_count(server_count)
-                print('[top.gg] Posted server count ({})'.format(server_count))
-            except Exception as e:
-                print('[top.gg] Failed to post server count\n{}: {}'.format(type(e).__name__, e))
-            
-            await Functions.update_status(bot)
+async def deletetext(ctx, title, description):
+    embed = discord.Embed(
+        title = title,
+        description = description,
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
     
-    @bot.event
-    async def on_guild_join(guild):
-        print("[Guilds] The bot joined a guild. Current number:", len(bot.guilds))
+async def remove_empty_lines(filename):
+    if not os.path.isfile(filename):
+        print("{} does not exist ".format(filename))
+        return
+    with open(filename) as filehandle:
+        lines = filehandle.readlines()
+
+    with open(filename, 'w') as filehandle:
+        lines = filter(lambda x: x.strip(), lines)
+        filehandle.writelines(lines)
+
+# Commands
+@bot.command()
+async def help(ctx):
+    await helptext(ctx)
+
+@bot.command()
+async def save(ctx, arg, arg2):
+    global now
+    text = "´" + arg + "´ was saved in ´" + arg2 + "´ type ´-read "+ arg2 + "´ to see your saved data"
+    file = open("{}.{}.dcsave".format(ctx.guild.id, arg2), "a")
+    file.write(arg)
+    await savetext(ctx, "Successfully saved!", text)
+    print("someone saved '" + arg + "' under the name '" + "{}.{}.dcsave".format(ctx.guild, arg2) + "'")
+    file.close()
+    file = open("{}.{}.dcsave".format(ctx.guild.id, arg2), "a")
     
-    @bot.event
-    async def on_guild_remove(guild):
-        print("[Guilds] The bot left a guild. Current number:", len(bot.guilds))
-        shutil.rmtree(os.path.join(fileDir, str(guild.id)), ignore_errors=True)
+    file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
+    file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone saved '" + arg + "' under the name '" + "{}.{}.dcsave".format(ctx.guild, arg2) + "'\n")
+    file.close
+    file = open("{}.dclist".format(ctx.guild.id), "a")
+    file.close
     
-    @bot.event
-    async def on_ready():
-        bot.add_cog(TopGG(bot))
-        print("[Debug] Nota is online.")
-        print()
-        await Functions.update_status(bot)
+    found = False
+    with open("{}.dclist".format(ctx.guild.id)) as f:
+        if '"' + arg2 + '"' in f.read():
+            found = True
+        
+    if found == False:
+        file = open("{}.dclist".format(ctx.guild.id), "a")
+        arg2 = '"' + arg2 + '"' +"\n"
+        file.write(arg2)
+        print("saved", arg2, "in", str(ctx.guild.id) + ".dclist")
+        file.close
     
-    @bot.event
-    async def on_reaction_add(reaction, user):
-        if user.id == bot.user.id:
-            return
-        
-        if reaction.message.author.id == bot.user.id:
-            emoji_list = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-            
-            for i in emoji_list:
-                if reaction.emoji == i:
-                    if str(reaction.message.channel.type) == "private":
-                        current_id = os.path.join(str(reaction.message.author.id), str(reaction.message.author.id))
-                    else:
-                        current_id = os.path.join(str(reaction.message.guild.id), str(reaction.message.guild.id))
-                    
-                    with open(os.path.join(fileDir, '{}.json'.format(current_id)), "r") as file:
-                        s = json.loads(file.read())
-                    
-                    await reaction.message.delete()
-                    await read.run(reaction.message, "-", ["-read", s["favourites"][emoji_list.index(i)]], current_id)
-                    
-                    return
+@bot.command()
+async def read(ctx, arg):
+    global now
+    try:
+        file = open("{}.{}.dcsave".format(ctx.guild.id, arg), "r")
+        await readtext(ctx, arg ,file.read())
+        print("someone read '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'")
+        file.close()
+        file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
+        file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone read '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'\n")
+        file.close
+    except:
+        await failreadtext(ctx, "Error!", "there is no such file called ´" + arg + "´.")
+
+@bot.command()
+async def delete(ctx, arg):
+    global now
+    text = "´" + arg + "´ has been deleted."
+    os.remove("{}.{}.dcsave".format(ctx.guild.id, arg))
+    await deletetext(ctx, text, "This action can't be undone")
+    print("someon deleted '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'")
+    file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
+    file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone deleted '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'\n")
+    file.close
     
-    @bot.event
-    async def on_command_error(ctx, error):
-        if isinstance(error, CommandNotFound):
-            return ctx
-        raise error
+    file = "{}.dclist".format(ctx.guild.id)
     
-    @bot.event
-    async def on_message(message):
-        if message.author.id == bot.user.id:
-            return
-        
-        try:
-            prefix = await Functions.get_prefix(message)
-        except FileNotFoundError:
-            prefix = "-"
-        except json.JSONDecodeError:
-            if isinstance(message.channel, PrivateChannel):
-                current_id = os.path.join(str(message.author.id), str(message.author.id))
-                open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                    json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            else:
-                current_id = os.path.join(str(message.guild.id), str(message.guild.id))
-                open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                    json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            await message.channel.send(
-                "Sorry, but there was a major error with your saved files. All of your files and settings had to be reset. Please join the support server and report exactly what "
-                "happened leading up to this error. Thanks!\nhttps://discord.gg/yf3jehq4sn")
-            print("[Error] Save file reset! User: " + message.author.name)
-            return
-        
-        if message.content.lower() == "will nota kill us all?":
-            await Functions.embed(message, "Yes.", "I will.")
-            print("[Secret] NOTA WILL KILL EVERYONE!!!")
-            return
-        
-        msglst = await Functions.input_handler(message.content)
-        
-        try:
-            if not msglst[0].startswith(prefix):
-                return
-        except AttributeError:
-            return
-        
-        try:
-            print("[Bot] Nota has been used.")
-            with open("Data/totaluses.dat", "r") as file:
-                fread = file.read()
-                with open("Data/totaluses.dat", "w") as file2:
-                    file2.write(str(int(fread) + 1))
-            if isinstance(message.channel, PrivateChannel):
-                current_id = os.path.join(str(message.author.id), str(message.author.id))
-                if not os.path.exists(os.path.join(fileDir, str(message.author.id))):
-                    os.mkdir(os.path.join(fileDir, str(message.author.id)))
-                if not os.path.exists((os.path.join(fileDir, '{}.json'.format(current_id)))):
-                    open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                        json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            else:
-                current_id = os.path.join(str(message.guild.id), str(message.guild.id))
-                if not os.path.exists(os.path.join(fileDir, str(message.guild.id))):
-                    os.mkdir(os.path.join(fileDir, str(message.guild.id)))
-                if not os.path.exists((os.path.join(fileDir, '{}.json'.format(current_id)))):
-                    open(os.path.join(fileDir, '{}.json'.format(current_id)), "w+").write(
-                        json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True}, "stats": [], "favourites": []}))
-            
-            usrpremium = True
-            with open(os.path.join(os.getcwd(), "premium.users"), "r") as f:
-                for line in f.readlines():
-                    lsplit = line.split("#")
-                    if str(message.author.id) in lsplit[0]:
-                        usrpremium = True
-            if msglst[0] == prefix + "help":
-                await help.run(message, prefix, msglst, version)
-            elif msglst[0] == prefix + "privacy":
-                await privacy.run(message, prefix, msglst, version)
-            
-            # ADMIN
-            elif msglst[0] == prefix + "broadcast":
-                if str(message.author.id) == "485441972111147010":
-                    await broadcast.run(message, prefix, msglst, current_id, bot)
-                else:
-                    await Functions.embed(message, "Error!", "You do not have the permission to use this command!")
-            
-            # SETTINGS
-            elif msglst[0] == prefix + "setprefix":
-                await setprefix.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "setcolor":  # PREMIUM
-                await setcolor.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "resetcolor":  # PREMIUM
-                await resetcolor.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "togglefooter":  # PREMIUM
-                await togglefooter.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "toggleads":  # PREMIUM
-                await toggleads.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "togglefavourites":  # PREMIUM
-                await togglefavourites.run(message, prefix, msglst, current_id)
-            
-            # STATS
-            elif msglst[0] == prefix + "stats" or msglst[0] == prefix + "privatestats":
-                if isinstance(message.channel, PrivateChannel):
-                    await stats.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatestats" and usrpremium:
-                    await stats.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await stats.run(message, prefix, msglst, current_id)
-            
-            # FILES
-            elif msglst[0] == prefix + "save" or msglst[0] == prefix + "privatesave":
-                if isinstance(message.channel, PrivateChannel):
-                    await save.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatesave" and usrpremium:
-                    await save.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await save.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "read" or msglst[0] == prefix + "privateread":
-                if isinstance(message.channel, PrivateChannel):
-                    await read.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privateread" and usrpremium:
-                    await read.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await read.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "delete" or msglst[0] == prefix + "privatedelete":
-                if isinstance(message.channel, PrivateChannel):
-                    await delete.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatedelete" and usrpremium:
-                    await delete.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await delete.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "files" or msglst[0] == prefix + "privatefiles":
-                if isinstance(message.channel, PrivateChannel):
-                    await files.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                elif msglst[0] == prefix + "privatefiles" and usrpremium:
-                    await files.run(message, prefix, msglst, os.path.join(str(message.author.id), str(message.author.id)))
-                else:
-                    await files.run(message, prefix, msglst, current_id)
-            
-            elif msglst[0] == prefix + "favourites":
-                await favourites.run(message, bot, msglst, current_id)
-            
-            # OTHER
-            elif msglst[0] == prefix + "timer":
-                await timer.run(message, prefix, msglst)
-            
-            elif msglst[0] == prefix + "calc":
-                await calc.run(message, msglst)
-            
-            elif msglst[0] == prefix + "embed":
-                await embed.run(message, prefix, msglst)
-            
-            elif msglst[0] == prefix + "botstats":
-                await botstats.run(message, bot, start_time, time, current_id)
-            
-            # Premium
-            elif msglst[0] == prefix + "premium":
-                await premium.run(message)
-            
-            else:
-                if msglst[0].startswith(prefix):
-                    await Functions.embed(message, "<:nota_error:796499987949027349> That's not a command. type '" + prefix + "help' to find out hot the bot works!")
-        
-        except errors.Forbidden as e:
-            stringsend = "I am missing some permissions here. Please make sure that I have all of the ones below:"
-            stringsend += "\n- Manage Messages"
-            stringsend += "\n- Embed Links"
-            stringsend += "\n- Attach Files"
-            stringsend += "\n- Read Message History"
-            stringsend += "\n- Use External Emojis"
-            stringsend += "\n\nIf you have any more problems, join the support server. (link on Nota's top.gg page)"
-            print("[Error] Someone didn't give Nota permissions: " +
-                  str(e).split("(")[1].split(")")[0].split(":")[
-                      1].strip(" "))
-            try:
-                await message.channel.send(stringsend)
-            except errors.Forbidden:
-                print("[Error] ...and the Bot couldn't even tell them...")
-            return
-        except UnicodeDecodeError as e:
-            print("[Error] " + str(e))
-        
-        except json.JSONDecodeError as e:
-            print("[Error] " + str(e))
-        
-        # except Exception as e:
-        #   print("Error: " + str(e))
-        
-        await bot.process_commands(message)
+    arg = '"' + arg + '"'
     
-    bot.run(TOKEN)
+    f = open(file, 'r')
+    a = [arg, arg, arg]
+    lst = []
+    for line in f:
+        if arg in line:
+            line = line.replace(arg,'')
+    lst.append(line)
+    f.close()
+    f = open(file,'w')
+    for line in lst:
+        f.write(line)
+    f.close()
+    
+    await remove_empty_lines(file)
+    
+@bot.command(pass_context=True)
+async def ping(ctx):
+    """ Pong! """
+    before = time.monotonic()
+    message = await ctx.send("Pong!")
+    ping = (time.monotonic() - before) * 1000
+    await message.edit(content=f"Pong!  `{int(ping)}ms`")
+    print(f'Ping {int(ping)}ms')
+    
+@bot.command()
+async def list(ctx):
+    global location
+    global files_in_dir
+    embed = discord.Embed(
+        title = "All saved files on this server:",
+        description = "",
+        colour = 0x34b713
+    )
+    with open ("{}.dclist".format(ctx.guild.id), "r") as fileHandler:
+    # Read each line in loop
+        for line in fileHandler:
+        # As each line (except last one) will contain new line character, so strip that
+            print(line.strip())
+            embed.add_field(name="File:", value=line.strip(), inline=False)
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def botservers(ctx):
+    embed = discord.Embed(
+        title = "This bot is on this many servers:",
+        description = len(bot.guilds),
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)  
+    
+@bot.command(pass_context=True)
+async def share(ctx, arg, arg2):
+    global now
+    try:
+        file = open("{}.{}.dcsave".format(ctx.guild.id, arg), "r")
+        if len(arg2) == 18:
+            file2 = open("{}.{}.dcsave".format(arg2, arg), "a")
+            
+        file2.write(file.read())
+        file2.close()
+        file.close()
+        file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
+        file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone shared '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'\n")
+        file.close
+        
+        embed = discord.Embed(
+            title = "Yay!",
+            description = "Successfully shared '" + arg + "' to '" + arg2 + "'",
+            colour = 0x34b713
+        )
+        await ctx.send(embed=embed)
+    except:
+        embed = discord.Embed(
+            title = "Error!",
+            description = "A problem occured while trying to share '" + arg + "' to '" + arg2 + "does the file exist? Have you entered a valid guild id?",
+            colour = 0x34b713
+        )
+        await ctx.send(embed=embed)
+
+print("the bot has started!")
+now = datetime.datetime.now()
+print ("Current date and time : ")
+print (now.strftime("%Y-%m-%d %H:%M:%S"))
+print("current directory is : " + dirpath)
+print("Directory name is : " + foldername)
+print("everything should work")
+
+bot.run(TOKEN)
