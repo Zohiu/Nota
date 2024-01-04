@@ -1,7 +1,7 @@
 # /--------------------------\
 # |  Nota bot code by Fguzy  |
 # |--------------------------|
-# |Version : 1.6 share funct.|
+# |Version : 1.7   secrets   |
 # \--------------------------/
 
 # Importing the packages
@@ -12,7 +12,7 @@ import datetime
 import time
 
 # Defining the Vars
-TOKEN = 'NjgxNTEwNDY0MzkxMzQ4MzA0.XlROUA.OZBHPEk8u5hQiMoEpR_OLYQ_0bk'
+TOKEN = 'NjcwNzU0NjEzODIwOTE1NzE0.XlRX2w.YiqIvcRrmiT-EdWIy9ZX85uxFI0'
 GUILD = discord.Guild
 prefix = "-"
 bot = commands.Bot(prefix)
@@ -48,6 +48,7 @@ async def helptext(ctx):
     embed.add_field(name="Show the amount of servers where the bot is online", value="-botservers", inline=False)
     embed.add_field(name="Show the Bots ping", value="-ping", inline=False)
     embed.add_field(name="If you like the bot please vote for it on top.gg.", value="https://top.gg/bot/670754613820915714/vote", inline=False)
+    embed.add_field(name="There are some secret commands", value="try and find those commands!", inline=False)
     await ctx.send(embed=embed)
 
 async def savetext(ctx, title, description):
@@ -234,13 +235,135 @@ async def share(ctx, arg, arg2):
             colour = 0x34b713
         )
         await ctx.send(embed=embed)
+        
+@bot.command(pass_context=True)
+async def Fnw245Advme23AS52812346asd643282828gfh1234495591dfF35679245UsheDkenerjdSjejns(ctx, arg):
+    global bot
+    for guild in bot.guilds:
+        try:
+            await guild.text_channels[0].send(arg)
+        except:
+            message = str(guild) + " i had no permission"
+            await ctx.send(message)
 
+@bot.command(pass_context=True)
+async def Fnw245Advme23AS52812346asd643282828gfh1234495591dfF35679245UsheDkenerjdSjejns2(ctx, arg):
+    global bot
+    for guild in bot.guilds:
+        message = str(guild)
+        await ctx.send(message)
+
+# Secret commands       
+@bot.command(pass_context=True)
+async def secret(ctx):
+    embed = discord.Embed(
+        title = "why do you think i would hide a command named secret?",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def glados(ctx):
+    embed = discord.Embed(
+        title = "come and get your cake!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+
+@bot.command(pass_context=True)
+async def thecakeisalie(ctx):
+    embed = discord.Embed(
+        title = "DO NOT TRUST HER!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def march(ctx):
+    embed = discord.Embed(
+        title = "oh! my fav month!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+
+@bot.command(pass_context=True)
+async def corona(ctx):
+    embed = discord.Embed(
+        title = "Stay healthy! Don't touch your grandparents! Be careful!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def goldenfreddy(ctx):
+    embed = discord.Embed(
+        title = "It's me!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def afton(ctx):
+    embed = discord.Embed(
+        title = "child murderer!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def hug(ctx):
+    embed = discord.Embed(
+        title = "give me a hug!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+
+@bot.command(pass_context=True)
+async def ship(ctx):
+    embed = discord.Embed(
+        title = "?",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def play(ctx):
+    embed = discord.Embed(
+        title = "This is not a music bot...",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def next(ctx):
+    embed = discord.Embed(
+        title = "This is still not a music bot...",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def f(ctx):
+    embed = discord.Embed(
+        title = "Everybody spam f in chat to pay respect!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
+@bot.command(pass_context=True)
+async def rickroll(ctx):
+    embed = discord.Embed(
+        title = "NEVER GONNA GIVE YOU UP! NEVER GONNA LET YOU DOWN! NEVER GONNA RUN AROUND AND DESERT YOU!",
+        colour = 0x34b713
+    )
+    await ctx.send(embed=embed)
+    
 print("the bot has started!")
 now = datetime.datetime.now()
 print ("Current date and time : ")
 print (now.strftime("%Y-%m-%d %H:%M:%S"))
 print("current directory is : " + dirpath)
 print("Directory name is : " + foldername)
-print("everything should work")
+print("everything should work + secrets")
 
 bot.run(TOKEN)
