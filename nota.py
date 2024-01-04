@@ -1,8 +1,29 @@
-version = "4.3.4"
+def startBot():
+    notabot = main.Bot()
+
+    commands = []
+
+    for root, dirs, files in os.walk("Commands"):
+        for file in files:
+            # append the file name to the list
+            if file.split(".")[1] == "py" and file.split(".")[0] != "__init__":
+                root = root.replace("\\", ".").replace("/", ".")
+                commands.append(root + "." + file.split(".")[0])
+
+    for command in commands:
+        globals()[command] = importlib.import_module(command)
+        globals()[command].initialize(notabot)
+
+    print(Colors.BLUE + "[Debug] Everything has been loaded into memory." + Colors.RESET)
+    notabot.BOT.run(notabot.TOKEN)
+
 
 if __name__ == '__main__':
+    version = "5.0-DEV_SNAPSHOT.1"
 
-    print("                                                                                  ")
+    from Modules.colors import Colors
+
+    print(Colors.GREEN)
     print("NNNNNNNN        NNNNNNNN                          tttt                            ")
     print("N:::::::N       N::::::N                       ttt:::t                            ")
     print("N::::::::N      N::::::N                       t:::::t                            ")
@@ -20,23 +41,20 @@ if __name__ == '__main__':
     print("N::::::N        N::::::N oo:::::::::::oo         tt:::::::::::tt a::::::::::aa:::a")
     print("NNNNNNNN         NNNNNNN   ooooooooooo             ttttttttttt    aaaaaaaaaa  aaaa")
     print("                                                                                  ")
-    print("                                     Version " + version + "                          ")
-    print("                                                                                  ")
+    print(Colors.BLUE + "[Debug] Version: " + Colors.CYAN + version + Colors.RESET)
+    print(Colors.RESET)
 
-    import subprocess
+    print(Colors.BLUE + "[Debug] Importing packages required to start..." + Colors.RESET)
+    import multiprocessing
+    import importlib
     import os
+    from Core import main
+    print(Colors.BLUE + "[Debug] Starting the bot..." + Colors.RESET)
+
+    bot = multiprocessing.Process(target=startBot)
+    bot.start()
 
     if os.name == 'nt':
         ver = "python"
     else:
         ver = "python3"
-
-    print("[Debug] bot.py is starting...")
-    bot = subprocess.Popen([ver, 'bot.py'])
-    # print("[Debug] premium_updater.py is starting...")
-    # premium_updater = subprocess.Popen([ver, 'premium_updater.py'])
-    # print("[Debug] console.py is starting...")
-    # console = subprocess.Popen([ver, 'console.py'])
-
-    while True:
-        pass
