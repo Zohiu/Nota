@@ -1,369 +1,227 @@
 # /--------------------------\
 # |  Nota bot code by Fguzy  |
 # |--------------------------|
-# |Version : 1.7   secrets   |
+# |Version : 2.1  TWO!!!!!   |
 # \--------------------------/
 
 # Importing the packages
 import os
 import discord
 from discord.ext import commands
-import datetime
 import time
 
 # Defining the Vars
-TOKEN = 'NjcwNzU0NjEzODIwOTE1NzE0.XlRX2w.YiqIvcRrmiT-EdWIy9ZX85uxFI0'
-GUILD = discord.Guild
+TOKEN = 'NjcwNzU0NjEzODIwOTE1NzE0.XqiCgQ.y9dbMQiPjw8IfAJidFbbfYf1vZI'
 prefix = "-"
 bot = commands.Bot(prefix)
 dirpath = os.getcwd()
-foldername = os.path.basename(dirpath)
 location = dirpath
 files_in_dir = []
+fileDir = os.path.dirname(os.path.realpath('__file__'))
 
 # Removing normal help command
 bot.remove_command("help")
 
-async def save(guild, save, name):
-    file = open("{}.dcsave".format(guild), "a+")
-    file.write(save, name)
-    file.close()
-
-async def helptext(ctx):
-    embed = discord.Embed(
-        title = "Commands:",
-        description = "Prefix : -",
-        colour = 0x34b713
-    )
-    
-    embed.set_footer(text="© 2020 Nota, A bot by Fguzy#5577.")
-    embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
-    embed.set_author(name="Nota Bot help" , icon_url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
-    embed.add_field(name="Nota Bot help", value="-help", inline=False)
-    embed.add_field(name="Save something. (dont forget the '')", value="-save {'TO BE SAVED'} {'FILENAME'}", inline=False)
-    embed.add_field(name="Show you a saved text.", value="-read {'FILENAME'}", inline=False)
-    embed.add_field(name="Delete a file", value="-delete {'FILENAME'}", inline=False)
-    embed.add_field(name="Share a File. (how to get the guild id: Server settings -> Widget -> Server id)", value="-share {'SAVE FILE'} {GUILD ID OF THE RECEIVING SERVER}", inline=False)
-    embed.add_field(name="Lists all files", value="-list", inline=False)
-    embed.add_field(name="Show the amount of servers where the bot is online", value="-botservers", inline=False)
-    embed.add_field(name="Show the Bots ping", value="-ping", inline=False)
-    embed.add_field(name="If you like the bot please vote for it on top.gg.", value="https://top.gg/bot/670754613820915714/vote", inline=False)
-    embed.add_field(name="There are some secret commands", value="try and find those commands!", inline=False)
-    await ctx.send(embed=embed)
-
-async def savetext(ctx, title, description):
-    embed = discord.Embed(
-        title = title,
-        description = description,
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-async def readtext(ctx, title, description):
-    embed = discord.Embed(
-        title = title,
-        description = description,
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-
-async def failreadtext(ctx, title, description):
-    embed = discord.Embed(
-        title = title,
-        description = description,
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-async def deletetext(ctx, title, description):
-    embed = discord.Embed(
-        title = title,
-        description = description,
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-async def remove_empty_lines(filename):
-    if not os.path.isfile(filename):
-        print("{} does not exist ".format(filename))
-        return
-    with open(filename) as filehandle:
-        lines = filehandle.readlines()
-
-    with open(filename, 'w') as filehandle:
-        lines = filter(lambda x: x.strip(), lines)
-        filehandle.writelines(lines)
-
-# Commands
-@bot.command()
-async def help(ctx):
-    await helptext(ctx)
-
-@bot.command()
-async def save(ctx, arg, arg2):
-    global now
-    text = "´" + arg + "´ was saved in ´" + arg2 + "´ type ´-read "+ arg2 + "´ to see your saved data"
-    file = open("{}.{}.dcsave".format(ctx.guild.id, arg2), "a")
-    file.write(arg)
-    await savetext(ctx, "Successfully saved!", text)
-    print("someone saved '" + arg + "' under the name '" + "{}.{}.dcsave".format(ctx.guild, arg2) + "'")
-    file.close()
-    file = open("{}.{}.dcsave".format(ctx.guild.id, arg2), "a")
-    
-    file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
-    file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone saved '" + arg + "' under the name '" + "{}.{}.dcsave".format(ctx.guild, arg2) + "'\n")
-    file.close
-    file = open("{}.dclist".format(ctx.guild.id), "a")
-    file.close
-    
-    found = False
-    with open("{}.dclist".format(ctx.guild.id)) as f:
-        if '"' + arg2 + '"' in f.read():
-            found = True
-        
-    if found == False:
-        file = open("{}.dclist".format(ctx.guild.id), "a")
-        arg2 = '"' + arg2 + '"' +"\n"
-        file.write(arg2)
-        print("saved", arg2, "in", str(ctx.guild.id) + ".dclist")
-        file.close
-    
-@bot.command()
-async def read(ctx, arg):
-    global now
-    try:
-        file = open("{}.{}.dcsave".format(ctx.guild.id, arg), "r")
-        await readtext(ctx, arg ,file.read())
-        print("someone read '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'")
-        file.close()
-        file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
-        file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone read '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'\n")
-        file.close
-    except:
-        await failreadtext(ctx, "Error!", "there is no such file called ´" + arg + "´.")
-
-@bot.command()
-async def delete(ctx, arg):
-    global now
-    text = "´" + arg + "´ has been deleted."
-    os.remove("{}.{}.dcsave".format(ctx.guild.id, arg))
-    await deletetext(ctx, text, "This action can't be undone")
-    print("someon deleted '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'")
-    file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
-    file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone deleted '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'\n")
-    file.close
-    
-    file = "{}.dclist".format(ctx.guild.id)
-    
-    arg = '"' + arg + '"'
-    
-    f = open(file, 'r')
-    a = [arg, arg, arg]
-    lst = []
-    for line in f:
-        if arg in line:
-            line = line.replace(arg,'')
-    lst.append(line)
-    f.close()
-    f = open(file,'w')
-    for line in lst:
-        f.write(line)
-    f.close()
-    
-    await remove_empty_lines(file)
-    
-@bot.command(pass_context=True)
-async def ping(ctx):
-    """ Pong! """
-    before = time.monotonic()
-    message = await ctx.send("Pong!")
-    ping = (time.monotonic() - before) * 1000
-    await message.edit(content=f"Pong!  `{int(ping)}ms`")
-    print(f'Ping {int(ping)}ms')
-    
-@bot.command()
-async def list(ctx):
-    global location
-    global files_in_dir
-    embed = discord.Embed(
-        title = "All saved files on this server:",
-        description = "",
-        colour = 0x34b713
-    )
-    with open ("{}.dclist".format(ctx.guild.id), "r") as fileHandler:
-    # Read each line in loop
-        for line in fileHandler:
-        # As each line (except last one) will contain new line character, so strip that
-            print(line.strip())
-            embed.add_field(name="File:", value=line.strip(), inline=False)
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def botservers(ctx):
-    embed = discord.Embed(
-        title = "This bot is on this many servers:",
-        description = len(bot.guilds),
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)  
-    
-@bot.command(pass_context=True)
-async def share(ctx, arg, arg2):
-    global now
-    try:
-        file = open("{}.{}.dcsave".format(ctx.guild.id, arg), "r")
-        if len(arg2) == 18:
-            file2 = open("{}.{}.dcsave".format(arg2, arg), "a")
-            
-        file2.write(file.read())
-        file2.close()
-        file.close()
-        file = open("{}.logfile".format(datetime.datetime.now().date()), "a")
-        file.write(now.strftime("%Y-%m-%d %H:%M:%S") + " | someone shared '" + "{}.{}.dcsave".format(ctx.guild.id, arg) + "'\n")
-        file.close
-        
+class Functions:
+    async def embed(ctx, title, describtion):
         embed = discord.Embed(
-            title = "Yay!",
-            description = "Successfully shared '" + arg + "' to '" + arg2 + "'",
-            colour = 0x34b713
+            title=title,
+            description=describtion,
+            colour=0x34b713
         )
+        embed.set_footer(text="Subscribe to the maker, Fguzy on YouTube: shorturl.at/mFJK8")
         await ctx.send(embed=embed)
-    except:
-        embed = discord.Embed(
-            title = "Error!",
-            description = "A problem occured while trying to share '" + arg + "' to '" + arg2 + "does the file exist? Have you entered a valid guild id?",
-            colour = 0x34b713
-        )
-        await ctx.send(embed=embed)
-        
-@bot.command(pass_context=True)
-async def Fnw245Advme23AS52812346asd643282828gfh1234495591dfF35679245UsheDkenerjdSjejns(ctx, arg):
-    global bot
-    for guild in bot.guilds:
+
+
+    async def check_perm(ctx):
         try:
-            await guild.text_channels[0].send(arg)
+            open(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)), "r").read()
+            if "Nota perms" in str(ctx.message.author.roles):
+                access = True
+            else:
+                access = False
         except:
-            message = str(guild) + " i had no permission"
-            await ctx.send(message)
+            access = True
 
-@bot.command(pass_context=True)
-async def Fnw245Advme23AS52812346asd643282828gfh1234495591dfF35679245UsheDkenerjdSjejns2(ctx, arg):
-    global bot
-    for guild in bot.guilds:
-        message = str(guild)
-        await ctx.send(message)
+        return  access
 
-# Secret commands       
-@bot.command(pass_context=True)
-async def secret(ctx):
-    embed = discord.Embed(
-        title = "why do you think i would hide a command named secret?",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def glados(ctx):
-    embed = discord.Embed(
-        title = "come and get your cake!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
 
-@bot.command(pass_context=True)
-async def thecakeisalie(ctx):
-    embed = discord.Embed(
-        title = "DO NOT TRUST HER!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def march(ctx):
-    embed = discord.Embed(
-        title = "oh! my fav month!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
+class Commands:
+    @bot.command()
+    async def help(ctx):
+        if await Functions.check_perm(ctx):
+            embed = discord.Embed(
+                title="Commands:",
+                description="Prefix : -",
+                colour=0x34b713
+            )
 
-@bot.command(pass_context=True)
-async def corona(ctx):
-    embed = discord.Embed(
-        title = "Stay healthy! Don't touch your grandparents! Be careful!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def goldenfreddy(ctx):
-    embed = discord.Embed(
-        title = "It's me!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def afton(ctx):
-    embed = discord.Embed(
-        title = "child murderer!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def hug(ctx):
-    embed = discord.Embed(
-        title = "give me a hug!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
+            embed.set_footer(text="Â© 2020 Nota, A bot by Fguzy#5577.")
+            embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
+            embed.set_author(name="Nota Bot help", icon_url="https://cdn.discordapp.com/avatars/670754613820915714/80e64cfc835ef73bef45ca6152b6da7e.png?size=2048")
+            embed.add_field(name="Nota Bot help", value="-help", inline=False)
+            embed.add_field(name="Save something. (dont forget the '')", value="-save {'TO BE SAVED'} {'FILENAME'}", inline=False)
+            embed.add_field(name="Show you a saved text.", value="-read {'FILENAME'}", inline=False)
+            embed.add_field(name="Delete a file", value="-delete {'FILENAME'}", inline=False)
+            embed.add_field(name="Share a File. (how to get the guild id: Server settings -> Widget -> Server id)", value="-share {'SAVE FILE'} {GUILD ID OF THE RECEIVING SERVER}", inline=False)
+            embed.add_field(name="enable the permissions", value="-enableperms", inline=False)
+            embed.add_field(name="disable the permissions", value="-disableperms", inline=False)
+            embed.add_field(name="Lists all files", value="-list", inline=False)
+            embed.add_field(name="Show the amount of servers where the bot is online", value="-guilds", inline=False)
+            embed.add_field(name="Show the Bots ping", value="-ping", inline=False)
+            embed.add_field(name="Shows the invite link.", value="-invite", inline=False)
+            embed.add_field(name="If you like the bot please vote for it on top.gg.", value="https://top.gg/bot/670754613820915714/vote", inline=False)
+            embed.add_field(name="Support me, the maker by subscribing to me on youtube.", value="https://www.youtube.com/channel/UCMiR4h60k6DJPrWgvTY6soQ", inline=False)
+            await ctx.send(embed=embed)
 
-@bot.command(pass_context=True)
-async def ship(ctx):
-    embed = discord.Embed(
-        title = "?",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def play(ctx):
-    embed = discord.Embed(
-        title = "This is not a music bot...",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def next(ctx):
-    embed = discord.Embed(
-        title = "This is still not a music bot...",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def f(ctx):
-    embed = discord.Embed(
-        title = "Everybody spam f in chat to pay respect!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-@bot.command(pass_context=True)
-async def rickroll(ctx):
-    embed = discord.Embed(
-        title = "NEVER GONNA GIVE YOU UP! NEVER GONNA LET YOU DOWN! NEVER GONNA RUN AROUND AND DESERT YOU!",
-        colour = 0x34b713
-    )
-    await ctx.send(embed=embed)
-    
-print("the bot has started!")
-now = datetime.datetime.now()
-print ("Current date and time : ")
-print (now.strftime("%Y-%m-%d %H:%M:%S"))
-print("current directory is : " + dirpath)
-print("Directory name is : " + foldername)
-print("everything should work + secrets")
 
+    @bot.command()
+    async def save(ctx, content, name):
+        if await Functions.check_perm(ctx):
+            try:
+                file = open(os.path.join(fileDir,'{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                file.write(content)
+                file.close()
+            except:
+                os.mkdir(os.path.join(fileDir, '{}'.format(ctx.guild.id)))
+                file = open(os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name)), "a+")
+                file.write(content)
+                file.close()
+
+            await Functions.embed(ctx, "Successfully saved!", "'" + content + "' was saved in '" + name + "' type '-read " + name + "' to see your saved data")
+
+            dclistfile = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+            open(dclistfile, "a+")
+
+            found = False
+            with open(dclistfile) as f:
+                if '"' + name + '"' in f.read():
+                    found = True
+        
+            if found == False:
+                dclist = open(dclistfile, "a")
+                name = '"' + name + '"' +"\n"
+                dclist.write(name)
+                dclist.close
+
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def read(ctx, name):
+        if await Functions.check_perm(ctx):
+            try:
+                filename = os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name))
+                file = open(filename, "r")
+
+                await Functions.embed(ctx, name, file.read())
+
+                file.close()
+            except:
+                await Functions.embed(ctx, "Error", "There is no such file called '" + name + "'")
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command()
+    async def delete(ctx, name):
+        if await Functions.check_perm(ctx):
+            try:
+                os.remove(os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, name)))
+
+                await Functions.embed(ctx, "'" + name + "' has been deleted.", "This action can't be undone.")
+
+                file = os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id))
+                tostrip = '"' + name + '"'
+
+                with open(file, "r") as f:
+                    lines = f.readlines()
+
+                with open(file, "w") as f:
+                    for line in lines:
+                        if line.strip("\n") != tostrip:
+                            f.write(line)
+            except:
+                await Functions.embed(ctx, "Error", "There is no such file called '" + name + "'")
+        else:
+            await Functions.embed(ctx, "Error!", "You do not have the permission to use this command.")
+
+    @bot.command(pass_context=True)
+    async def ping(ctx):
+        if await Functions.check_perm(ctx):
+            before = time.monotonic()
+            message = await ctx.send("Pong!")
+            ping = (time.monotonic() - before) * 1000
+            await message.edit(content=f"Pong!  `{int(ping)}ms`")
+
+
+    @bot.command()
+    async def list(ctx):
+        if await Functions.check_perm(ctx):
+            embed = discord.Embed(
+                title = "All saved files on this server:",
+                description = "",
+                colour = 0x34b713
+            )
+
+            with open (os.path.join(fileDir, '{}/{}.dclist'.format(ctx.guild.id, ctx.guild.id)), "r") as file:
+                for line in file:
+                    embed.add_field(name="File:", value=line.strip(), inline=False)
+            await ctx.send(embed=embed)
+
+
+    @bot.command(pass_context=True)
+    async def guilds(ctx):
+        if await Functions.check_perm(ctx):
+            await Functions.embed(ctx, "This bot is on this many servers:", len(bot.guilds))
+
+
+    @bot.command(pass_context=True)
+    async def share(ctx, file, share):
+        if await Functions.check_perm(ctx):
+            try:
+                savefile = open(os.path.join(fileDir, '{}/{}.{}.dcsave'.format(ctx.guild.id, ctx.guild.id, file)) , "r")
+
+                sharesavefile = open(os.path.join(fileDir, '{}/{}.{}.dcsave'.format(share, share, file)), "a")
+                sharelistfile = open(os.path.join(fileDir, '{}/{}.dclist'.format(share, share)), "a")
+            
+                sharesavefile.write(savefile.read())
+                sharelistfile.write('"' + file + '"')
+                sharelistfile.close()
+                sharesavefile.close()
+                savefile.close()
+
+                await Functions.embed(ctx, "Yay!", "Successfully shared '" + file + "' to '" + share + "'")
+
+            except:
+                await Functions.embed(ctx, "Error!", "A problem occured while trying to share '" + file + "' to '" + share + ". does the file exist? Have you entered a valid guild id?")
+
+    @bot.command(pass_context=True)
+    @commands.has_permissions(administrator=True)
+    async def enableperms(ctx):
+        await ctx.guild.create_role(name="Nota perms")
+        open(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)), "w+")
+        await Functions.embed(ctx, "Yay!", "Perms enabled. ONLY people with the 'Nota perms' role can use the bot. Administrators can always type '-disableperms' to disable the perms.")
+
+    @bot.command(pass_context=True)
+    @commands.has_permissions(administrator=True)
+    async def disableperms(ctx):
+        try:
+            open(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)), "a+")
+            role = discord.utils.get(ctx.guild.roles, name="Nota perms")
+            if role:
+                try:
+                    os.remove(os.path.join(fileDir, '{}/{}.dcperms'.format(ctx.guild.id, ctx.guild.id)))
+                    await Functions.embed(ctx, "Perms Disabled.", "The Perm role has been deleted and everyone can use the bot now. You can now delete the 'Nota perms role. You don't have to keep it.'")
+                except discord.Forbidden:
+                    await Functions.embed(ctx, "Error!", "No Permission to delete the 'Nota perms' role. Please move the 'Nota' role over the 'Nota perms' role and try again.")
+            else:
+                await bot.say("The role doesn't exist!")
+        except:
+            await Functions.embed(ctx, "Error!", "Perms are already disabled. type '-enableperms' to enable perms.")
+            
+    @bot.command()
+    async def invite(ctx):
+        await Functions.embed(ctx, "Invite Link:", "https://discordapp.com/oauth2/authorize?client_id=670754613820915714&permissions=268439552&scope=bot")
+
+print("The Bot has started.")
 bot.run(TOKEN)
