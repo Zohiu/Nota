@@ -1,93 +1,76 @@
-allcmds = ["help", "changeprefix", "changecolor", "stats", "timer", "remind", "save", "read", "delete", "files",
-                   "share", "privatesave", "privateread", "privatedelete", "privatefiles", "calc", "ping", "embed",
-                   "guilds", "premium", "uptime", "speed"]
-                   
-def update(input): 
-        stripstring = input.split(".")
-        output = ""
-
-        if len(stripstring) > 1:
-            stripstring.remove(stripstring[0])
-            
-        if stripstring[-1] == "dcsavepic":
-            stripstring.remove(stripstring[-1])
-            stripstring.append("dcsaveraw")
-            
-        elif stripstring[-1] == "usersavepic":
-            stripstring.remove(stripstring[-1])
-            stripstring.append("usersaveraw")
-            
-        for string in stripstring:
-            output += string + "."
-            
-        output = output[:-1]
-        
-        for string in allcmds:
-            if string == "changecolor":
-                if output == "dc" + string + "uses":
-                    output = "dc.setcoloruses"
-                
-                elif output == "user" + string + "uses":
-                    output = "user.setcoloruses"
-                    
-            elif string == "changeprefix":
-                if output == "dc" + string + "uses":
-                    output = "dc.setprefixuses"
-                
-                elif output == "user" + string + "uses":
-                    output = "user.setprefixuses"
-             
-            elif output == "dc" + string + "uses":
-                output = "dc." + string + "uses"
-                
-            elif output == "user" + string + "uses":
-                output = "user." + string + "uses"
-                
-        if output == "dclist":
-            output = "dc.list"
-        elif output == "dccolor":
-            output = "dc.color"
-        elif output == "dcprefix":
-            output = "dc.prefix"
-            
-        elif output == "userlist":
-            output = "user.list"
-        elif output == "usercolor":
-            output = "user.color"
-        elif output == "userprefix":
-            output = "user.prefix"
-        
-        
-        if "converter.py" in input:
-            return "converter.py"       
-        else:
-            return output
-
-print("Converting...\n")
-
+import shutil
+import json
 import os
 
-dir = os.getcwd()
+from base64 import *
+
+def encrypt(string : str):
+    base16_string = b16encode(string.encode()[::-1]).decode()[::-1]
+    base32_string = b32encode(base16_string.encode()).decode()[::-1]
+    base64_string = b64encode(base32_string.encode()).decode()[::-1]
+    base85_string = b85encode(base64_string.encode()).decode()[::-1]
+    return base85_string
+
+def decrypt(input : str):
+    print(input)
+    base64_string = b85decode(input.encode()[::-1]).decode()[::-1]
+    base32_string = b64decode(base64_string.encode()).decode()[::-1]
+    base16_string = b32decode(base32_string.encode()).decode()[::-1]
+    string = b16decode(base16_string.encode()).decode()[::-1]
+    return string
+
+toremove = []
+
+for dir in os.walk("G:/Dokumente/1ANOTA/NotaBotTest/Convertion"):
+    if not dir[1] == []:
+        new_list = {"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True},"stats": [], "favourites": []}
+        current_dir = dir[0]
+        files = dir[2]
         
-for d in os.walk(dir):
-    for f in d:
-        for string in f: 
-            if len(update(string)) > 3:
+        for file in files:
+            continue1 = True
+            print(file.split(".")[-1])
+            if file.split(".")[-1] == "dcsave":
+                filetype = "text"
+            elif file.split(".")[-1] == "dcsaveraw":
+                filetype = "raw"   
+            elif file.split(".")[-1] == "dcfilesave":
+                filetype = "file"
+                
+            elif file.split(".")[-1] == "files":
+                os.remove(os.path.join(current_dir, file))
+                continue1 = False
+            elif file.split(".")[-1] == "list":
+                os.remove(os.path.join(current_dir, file))
+                continue1 = False
+            elif file.split(".")[-1] == "info":
+                os.remove(os.path.join(current_dir, file))
+                continue1 = False
+              
+            else:
+                filetype = None
+                continue1 = False
+                    
+            file1 = file.split(".")[:-1]
+            filetemp = ""
+            for text in file1:
+                filetemp += text
+                    
+            if continue1:
                 try:
-                    print(string + "  >  " + update(string) + "\n")
-                    
-                    oldfilename = os.path.join(dir, os.path.join(d[0], string))
-                    newfilename = os.path.join(dir, os.path.join(d[0], update(string)))
-                    
-                    with open(oldfilename, "r") as file:
-                        content = file.read()
-                        
-                    os.remove(oldfilename)
-                    
-                    with open(newfilename, "w+") as file:
-                            file.write(content)
-                except Exception as e:
-                    print(e)
-                    continue
-                        
-input("\nDone! Press enter to exit... ")
+                    new_list["files"].append({"name": str(filetemp), "content": encrypt(str(open(os.path.join(current_dir, file), "r").read())), "author_name": "NaN", "author_id": "NaN", "type": str(filetype), "save_time": "NaN"})
+                    os.remove(os.path.join(current_dir, file))
+                except UnicodeDecodeError:
+                    os.remove(os.path.join(current_dir, file))
+            
+        open(os.path.join(current_dir, current_dir.split("\\")[-1] + ".json"), "w").write(json.dumps(new_list))
+            
+        print("\n" + "", current_dir, new_list, "" + "\n")
+        
+    else:
+        toremove.append(dir[0])
+
+for dir in toremove:
+    shutil.rmtree(dir)
+      
+json.dumps({"files": [], "settings": {"prefix": "-", "color": "68C60E", "read_footer": True, "show_ads": True, "show_favourites": True},"stats": [], "favourites": []})
